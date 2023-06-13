@@ -1,0 +1,12 @@
+.dropdown-menu {
+  min-width: 100px !important;
+  background-color: black;
+  opacity: 0.6;
+  border: 1px solid black;
+  height: 90px;
+}
+
+.dropdown-menu li a {
+  color: white;
+  padding: 6px;
+}

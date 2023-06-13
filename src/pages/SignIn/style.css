@@ -1,0 +1,34 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.backImg {
+    background-image: url("./backg.jpg");
+    background-size: cover;
+    /* height: 1000px; */
+    height: 100%;
+    width: 100%;
+}
+
+.background {
+    /* height: 100%; */
+    background: rgb(0, 0, 0, 0.4);
+    background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.8), transparent 60%, rgba(0, 0, 0, 0.8));
+}
+
+.logo {
+    width: 12rem;
+    height: 12rem;
+    margin-left: 20px;
+}
+
+.logo img {
+    width: 100%;
+}
+
+.login {
+    width: 24rem;
+    padding: 50px;
+}
