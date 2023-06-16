@@ -1,34 +1,57 @@
 import React, { useState } from "react";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { collection, addDoc, getFirestore } from "firebase/firestore";
 import logo from "./logo.png";
 import "./style.css";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import app from "../../Firebase";
 import { Alert, Snackbar } from "@mui/material";
-export default function SignIn() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+
+export default function SignUp() {
+  const [email, setEmail] = useState("");
+  const [userName, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [showWarningAlert, setShowWarningAlert] = useState(false);
   const navigate = useNavigate();
-  const handleSubmit = (e) => {
+
+  const onSubmit = (e) => {
     e.preventDefault();
     const auth = getAuth();
 
-    signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      const user = userCredential.user;
+    if (password === confirmPw) {
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          const userData = {
+            email: user.email,
+            userName: userName,
+          };
 
-      localStorage.setItem("at", user.accessToken);
-      localStorage.setItem("isLoggedIn", true);
-      localStorage.setItem("uid", getAuth().currentUser?.uid);
-      setShowSuccessAlert(true);
-      navigate('/');
-    })
-    .catch((error) => {
-      setShowErrorAlert(true);
-      console.log(error);
-    })
-  }
+          const db = getFirestore(app);
+          addDoc(collection(db, "users"), userData)
+            .then((docRef) => {
+              console.log("id: ", docRef.id);
+              setShowSuccessAlert(true);
+              setTimeout(() => {
+                navigate("/sign-in");
+              }, 3000);
+            })
+            .catch((error) => {
+              console.log(error);
+              setShowErrorAlert(true);
+            });
+        })
+        .catch((error) => {
+          console.log(error);
+          setShowErrorAlert(true);
+        });
+    } else {
+      setShowWarningAlert(true);
+    }
+  };
 
   return (
     <div className="backImg">
@@ -40,11 +63,13 @@ export default function SignIn() {
         </div>
         <div className="container login-wrapper">
           <form
-            onSubmit={handleSubmit}
+            onSubmit={onSubmit}
             className="login"
             style={{ margin: "auto", backgroundColor: "rgba(0,0,0,.75)" }}
           >
-            <h1 style={{ color: "#ffff" }}>Đăng nhập</h1>
+            <h1 style={{ color: "#ffff" }} className="text-center mb-3">
+              Đăng ký
+            </h1>
             <div className="mb-3">
               <label
                 htmlFor="email"
@@ -57,10 +82,35 @@ export default function SignIn() {
                 type="email"
                 className="form-control"
                 id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 required
                 aria-describedby="emailHelp"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{
+                  background: "#333",
+                  border: "none",
+                  outline: "none",
+                  boxShadow: "none",
+                  borderBottom: "1px solid orange",
+                  color: "white",
+                }}
+              />
+            </div>
+            <div className="mb-3">
+              <label
+                htmlFor="userName"
+                className="form-label"
+                style={{ color: "#8c8c8c" }}
+              >
+                Tên người dùng
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="userName"
+                required
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
                 style={{
                   background: "#333",
                   border: "none",
@@ -83,9 +133,9 @@ export default function SignIn() {
                 type="password"
                 className="form-control"
                 required
+                id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                id="password"
                 style={{
                   background: "#333",
                   border: "none",
@@ -97,6 +147,31 @@ export default function SignIn() {
               />
             </div>
             <div className="mb-3">
+              <label
+                htmlFor="confirmPassword"
+                className="form-label"
+                style={{ color: "#8c8c8c" }}
+              >
+                Xác nhận mật khẩu
+              </label>
+              <input
+                type="password"
+                className="form-control"
+                required
+                value={confirmPw}
+                onChange={(e) => setConfirmPw(e.target.value)}
+                id="confirmPassword"
+                style={{
+                  background: "#333",
+                  border: "none",
+                  outline: "none",
+                  boxShadow: "none",
+                  borderBottom: "1px solid orange",
+                  color: "white",
+                }}
+              />
+            </div>
+            <div className="my-5">
               <button
                 type="submit"
                 className="btn btn-primary"
@@ -108,104 +183,52 @@ export default function SignIn() {
                   boxShadow: "none",
                 }}
               >
-                Đăng nhập
+                Đăng ký
               </button>
-            </div>
-            <div
-              className="mb-3 form-check d-flex justify-content-between"
-              style={{ fontSize: "14px" }}
-            >
-              <div>
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="exampleCheck1"
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor="exampleCheck1"
-                  style={{ color: "#8c8c8c" }}
-                >
-                  Ghi nhớ tôi
-                </label>
-              </div>
-              <a
-                href=""
-                className="text-decoration-none"
-                style={{ color: "#8c8c8c" }}
-              >
-                Bạn cần trợ giúp
-              </a>
-            </div>
-            <div className="mb-4">
-              <span>Bạn mới tham gia Netflix?</span>
-              <a
-                href=""
-                className="text-decoration-none ms-1"
-                style={{ color: "white" }}
-              >
-                Đăng ký ngay
-              </a>
             </div>
           </form>
         </div>
 
-        <Snackbar 
+        <Snackbar
           open={showSuccessAlert}
-          autoHideDuration={3000}
+          autoHideDuration={1500}
           anchorOrigin={{
             vertical: "top",
             horizontal: "right",
           }}
-          onClose={() => {setShowSuccessAlert(false)}}
+          onClose={() => setShowSuccessAlert(false)}
         >
           <Alert onClose={() => setShowSuccessAlert(false)} severity="success">
-            Đăng nhập thành công!
+            Đăng ký thành công!
           </Alert>
         </Snackbar>
-        <Snackbar 
+        <Snackbar
           open={showErrorAlert}
-          autoHideDuration={3000}
+          autoHideDuration={1500}
           anchorOrigin={{
             vertical: "top",
             horizontal: "right",
           }}
-          onClose={() => {setShowErrorAlert(false)}}
+          onClose={() => setShowErrorAlert(false)}
         >
-          <Alert onClose={() => setShowErrorAlert(false)} severity="warning">
-            Vui lòng kiểm tra lại mật khẩu!
+          <Alert onClose={() => setShowErrorAlert(false)} severity="error">
+            Đăng ký thất bại!
           </Alert>
         </Snackbar>
-        {/* <footer className="mt-5"  style={{background: 'rgba(0, 0, 0, 0.75)'}}>
-          <div className="row container">
-            <a href="">Bạn có câu hỏi? Liên hệ với chúng tôi</a>
-          </div>
-          <div className="row row-cols-2 row-cols-lg-4 container">
-          <div className="col">
-          <a
-            href=""
-            className="text-decoration-none"
-            style={{ color: "#ffff", opacity: "0.6", fontSize: "14px" }}
-          >
-            <p>Mô tả âm thanh</p>
-          </a>
-          <a
-            href=""
-            className="text-decoration-none"
-            style={{ color: "#ffff", opacity: "0.6", fontSize: "14px" }}
-          >
-            <p>Quan hệ với nhà đầu tư</p>
-          </a>
-          <a
-            href=""
-            className="text-decoration-none"
-            style={{ color: "#ffff", opacity: "0.6", fontSize: "14px" }}
-          >
-            <p>Thông báo pháp lý</p>
-          </a>
-        </div>
-          </div>
-        </footer> */}
+        <Snackbar
+          open={showWarningAlert}
+          autoHideDuration={1500}
+          anchorOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+          onClose={() => setShowWarningAlert(false)}
+        >
+          <Alert onClose={() => setShowWarningAlert(false)} severity="warning">
+            Mật khẩu không khớp!
+          </Alert>
+        </Snackbar>
+
         <footer className="mt-5" style={{ background: "rgba(0, 0, 0, 0.75)" }}>
           <div className="container">
             <div className="row">
@@ -272,7 +295,15 @@ export default function SignIn() {
             <div className="row">
               <div className="col mb-5">
                 <i className="fa-solid fa-globe me-2"></i>
-                <select name="" id="" style={{backgroundColor: 'transparent', color: '#ffff', opacity: '0.8'}}>
+                <select
+                  name=""
+                  id=""
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "#ffff",
+                    opacity: "0.8",
+                  }}
+                >
                   <option value="">Tiếng việt</option>
                   <option value="">English</option>
                 </select>

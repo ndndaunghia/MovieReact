@@ -101,8 +101,8 @@ export default function Banner() {
             }
         </BannerDescription>
             <BannerButtons>
-                <BannerButton>Play</BannerButton>
-                <BannerButton>Add to list</BannerButton>
+                <BannerButton>Xem nhanh</BannerButton>
+                <BannerButton>Thêm vào danh sách</BannerButton>
             </BannerButtons>
         </BannerContent>
     </BannerWrapper>

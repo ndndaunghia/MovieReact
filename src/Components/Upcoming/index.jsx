@@ -8,7 +8,8 @@ export default function UpComing() {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getUpComingAsync());
-  })
+  }, []);
+  
   return (
     <div className='container'>
         <h2 className="my-5" style={{ color: "#ffff" }}>Sắp chiếu</h2>

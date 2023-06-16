@@ -5,6 +5,8 @@ import Footer from "./Components/Footer";
 import HomeMovies from "./Components/HomeMovies";
 import MyList from "./pages/MyList";
 import SignIn from "./pages/SignIn";
+import MovieDetail from "./Components/MovieDetail";
+import SignUp from "./pages/SignUp";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +29,22 @@ const router = createBrowserRouter([
     path: '/sign-in',
     element: (
         <SignIn/>
+    )
+  },
+  {
+    path: '/sign-up',
+    element: (
+      <SignUp/>
+    )
+  },
+  {
+    path: '/movie-detail/:id',
+    element: (
+      <div>
+        <Header/>
+        <MovieDetail/>
+        <Footer/>
+      </div>
     )
   }
 ]);

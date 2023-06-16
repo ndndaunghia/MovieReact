@@ -11,8 +11,6 @@ export default function Popular() {
   useEffect(() => {
     dispatch(getPopularAsync());
   }, []);
-  console.log(popular);
-
   return(
     <div className="container mt-5">
         <h2 className="mb-5" style={{color: '#ffff'}}>Phổ biến</h2>

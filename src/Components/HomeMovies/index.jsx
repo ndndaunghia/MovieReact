@@ -8,7 +8,7 @@ export default function HomeMovies() {
   return (
     <div>
       <Banner />
-      <Popular />
+      <Popular /> 
       <NowPlaying />
       <UpComing />
     </div>

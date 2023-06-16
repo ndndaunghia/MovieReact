@@ -5,6 +5,7 @@ import topRatedReducer from ".";
 import popularReducer from "./popular";
 import nowPlayingReducer from "./nowplaying";
 import upComingReducer from "./upcoming";
+import movieDetailReducer from "./moviedetail";
 
 let sagaMiddleware = createSagaMiddleware();
 const middleware = [sagaMiddleware];
@@ -14,7 +15,8 @@ export const store = configureStore({
         topRated: topRatedReducer,
         popular: popularReducer,
         nowPlaying: nowPlayingReducer,
-        upComing: upComingReducer
+        upComing: upComingReducer,
+        movieDetail: movieDetailReducer
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(middleware)
 });

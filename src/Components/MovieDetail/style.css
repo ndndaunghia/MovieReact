@@ -1,0 +1,75 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.wrapper {
+    /* background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0,0,0,0.8)), url("https://image.tmdb.org/t/p/original/nGxUxi3PfXDRm7Vg95VBNgNM8yc.jpg"); */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    min-height: 100vh;
+}
+
+.movie-detail {
+    margin-top: 5rem;
+}
+
+
+.left-box {
+    color: white;
+}
+
+.genres > a{
+    color: #fff;
+    background-color: transparent;
+    border: 1px solid white;
+    padding: 6px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.genres > a:hover {
+    color: rgb(121, 121, 155);
+}
+
+.action {
+    text-decoration: none !important;
+    border-radius: 30px;
+    padding: 7px 20px;
+    margin-top: 35px;
+    color: #fff;
+    background: #107afd;
+    font-weight: 600;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.movie-img {
+    height: 350px;
+    box-shadow: -4px 4px 5px 0 #000;
+    margin-top: 20px;
+}
+
+.button {
+    cursor: pointer;
+    color: #fff;
+    outline: none;
+    border: none;
+    font-weight: 700;
+    border-radius: 0.2vw;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    margin-right: 1rem; 
+    background-color: rgba(51, 51, 51, 0.5);
+
+}
+
+.button:hover {
+    color: #000;
+    background-color: #e6e6e6;
+    transition: all 0.2s;
+}

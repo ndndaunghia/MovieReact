@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import './style.css'
+import { Link } from "react-router-dom";
 const IMAGE_URL = "https://image.tmdb.org/t/p/original";
 
 const CardItemImg = styled.div`
@@ -65,49 +66,28 @@ const CardItemC = styled.div`
 `;
 
 export default function CardItem(props) {
-  const { poster_path, title, vote_average } = props.movie;
+  const { poster_path, title, vote_average, id } = props.movie;
 
   return (
-    // <CardItemC>
-    //   <CardItemImg>
-    //     <img src={IMAGE_URL + poster_path} alt="" />
-    //   </CardItemImg>
-    //   <CardItemContent>
-    //     <CardItemContentActions>
-    //       <CardItemContentAction style={{ float: "left" }}>
-    //         <i
-    //           className="fa-sharp fa-solid fa-play fa-2xl"
-    //           style={{ color: "white" }}
-    //         ></i>
-    //       </CardItemContentAction>
-    //       <CardItemContentAction style={{ float: "right" }}>
-    //         <i
-    //           className="fa-solid fa-heart fa-2xl"
-    //           style={{ color: "white" }}
-    //         ></i>
-    //       </CardItemContentAction>
-    //     </CardItemContentActions>
-    //   </CardItemContent>
-    // </CardItemC>
-    <div class="card">
+   <Link to={`movie-detail/${id}`}>
+    <div className="card">
       <a href="#">
-        <div class="img1" style={{backgroundImage: `url(${IMAGE_URL + poster_path})`}}></div>
-        <div class="img2" style={{backgroundImage: `url(${IMAGE_URL + poster_path})`}}></div>
-        {/* <div class="title">VIKINGS series Season 1 || Epsoide 1</div> */}
-        <div class="text">
+        <div className="img1" style={{backgroundImage: `url(${IMAGE_URL + poster_path})`}}></div>
+        <div className="img2" style={{backgroundImage: `url(${IMAGE_URL + poster_path})`}}></div>
+        <div className="text">
           {title}
         </div>
         <a href="#">
-          <div class="catagory">
-            Rating <i class="fas fa-film"></i>
+          <div className="catagory">
+            Rating <i className="fas fa-film"></i>
           </div>
         </a>
         <a href="#">
-          <div class="views">
-            {vote_average} <i class="far fa-eye"></i>{" "}
+          <div className="views">
+            {vote_average} <i className="far fa-eye"></i>{" "}
           </div>
         </a>
       </a>
-    </div>
+    </div></Link>
   );
 }

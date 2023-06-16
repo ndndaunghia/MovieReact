@@ -4,11 +4,13 @@ import axios from 'axios';
 import {API_POPULAR } from "../API";
 
 export const getPopularAsync = createAction('popular/getPopularAsync');
+// export const getPopularDetailAsync = createAction('popular/getPopularDetailAsync');
 
 function* getPopularSaga(action) {
   const data = yield call(() => axios.get(API_POPULAR, action.payload));
   yield put(getPopular(data?.data));
 }
+
 
 export function* watchGetPopularSaga() {
   yield takeLatest(getPopularAsync, getPopularSaga);

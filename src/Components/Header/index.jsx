@@ -1,19 +1,34 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import logo from "./logo.png";
 import user from "./user.png";
 import { Link } from "react-router-dom";
 import './style.css';
 
 export default function Header() {
+  const accessToken = localStorage.getItem("at");
+
+  const [isLoggedIn, setIsLoggedIn] = useState(accessToken ? true : false);
+
+  const logOut = () => {
+    localStorage.removeItem("at");
+    localStorage.removeItem("uid");
+    localStorage.setItem("isLoggedIn", JSON.stringify(false));
+    setIsLoggedIn(false);
+  };
+
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn")
+    setIsLoggedIn(isLoggedIn === 'true');
+  }, [])
   return (
     <nav
       className="navbar navbar-expand-lg fixed-top"
       style={{ backgroundColor: "transparent", padding: '0 25px' }}
     >
       <div className="container-fluid">
-        <a className="navbar-brand" href="#">
+        <Link className="navbar-brand" to='/'>
           <img src={logo} alt="" loading="lazy" style={{ width: "100px" }} />
-        </a>
+        </Link>
 
         <button
           className="navbar-toggler collapsed"
@@ -125,18 +140,34 @@ export default function Header() {
               >
                 <img src={user} className="img-fluid rounded-1" height="40" width="40" alt="" />
               </a>
+             {isLoggedIn ? (
+               <ul className="dropdown-menu custom-menu" aria-labelledby="navbarDropdown" >
+               <li style={{maxWidth: '120px'}}>
+                 <Link to="/sign-in" className="dropdown-item">
+                   Tài khoản
+                 </Link>
+               </li>
+  
+               <li style={{maxWidth: '120px'}}>
+                 <Link to="/" className="dropdown-item" onClick={logOut}>
+                   Đăng xuất
+                 </Link>
+               </li>
+             </ul>
+             ) : (
               <ul className="dropdown-menu custom-menu" aria-labelledby="navbarDropdown" >
-                <li style={{maxWidth: '120px'}}>
-                  <Link to="/sign-in" className="dropdown-item">
-                    Đăng nhập
-                  </Link>
-                </li>
-                <li style={{maxWidth: '120px'}}>
-                  <Link to="/signup" className="dropdown-item">
-                    Đăng ký
-                  </Link>
-                </li>
-              </ul>
+              <li style={{maxWidth: '120px'}}>
+                <Link to="/sign-in" className="dropdown-item">
+                  Đăng nhập
+                </Link>
+              </li>
+              <li style={{maxWidth: '120px'}}>
+                <Link to="/sign-up" className="dropdown-item">
+                  Đăng ký
+                </Link>
+              </li>
+            </ul>
+             )}
             </li>
           </ul>
         </div>
