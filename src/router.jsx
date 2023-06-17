@@ -26,27 +26,55 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: '/sign-in',
-    element: (
-        <SignIn/>
-    )
+    path: "/sign-in",
+    element: <SignIn />,
   },
   {
-    path: '/sign-up',
-    element: (
-      <SignUp/>
-    )
+    path: "/sign-up",
+    element: <SignUp />,
   },
   {
-    path: '/movie-detail/:id',
+    path: "/mylist",
+    element: (
+      <>
+        <Header />
+        <Outlet />
+        <Footer />
+      </>
+    ),
+    children: [
+      {
+        path: "/mylist",
+        element: <MyList />,
+      },
+    ],
+  },
+  {
+    path: "/mylist/movie-detail/:id",
+    element: (
+      <>
+        <Header />
+        <Outlet />
+        <Footer />
+      </>
+    ),
+    children: [
+      {
+        path: "/mylist/movie-detail/:id",
+        element: <MovieDetail />,
+      },
+    ],
+  },
+  {
+    path: "/movie-detail/:id",
     element: (
       <div>
-        <Header/>
-        <MovieDetail/>
-        <Footer/>
+        <Header />
+        <MovieDetail />
+        <Footer />
       </div>
-    )
-  }
+    ),
+  },
 ]);
 
 export default router;

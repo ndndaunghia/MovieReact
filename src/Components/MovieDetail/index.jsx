@@ -1,25 +1,108 @@
 import React, { useEffect, useState } from "react";
 import "./style.css";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { type } from "@testing-library/user-event/dist/type";
 import { useDispatch, useSelector } from "react-redux";
 import { getMovieDetailAsync } from "../../movies/moviedetail";
+import {
+  addToFavoriteAsync,
+  getFavoriteAsync,
+  removeFavoriteAsync,
+} from "../../movies/favorite";
+import { firebaseAppPromise } from "../../Firebase";
+import { getDatabase, onValue, ref } from "firebase/database";
+import { API_KEY, BASE_URL } from "../../API";
+
 export default function MovieDetail() {
   const { id } = useParams();
   const IMAGE_URL = "https://image.tmdb.org/t/p/original";
-
+  const VID_URL = BASE_URL + id + `/videos?language=vi-VN&` + API_KEY;
+  var TRAILER = 'https://www.youtube.com/embed/';
   const movieDetail = useSelector((state) => state.movieDetail.movieDetail);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const [isInFavorite, setIsInFavorite] = useState(false);
+  const [iFrame, setIFrame] = useState(false);
+  const [trailer, setTrailer] = useState('https://www.youtube.com/embed/');
+
+  useEffect(() => {
+    axios.get(VID_URL).then((res) => 
+     {
+      const trailerKey = res.data.results[0].key;
+      const newTrailer = 'https://www.youtube.com/embed/' + trailerKey;
+      setTrailer(newTrailer);
+     }
+    ).catch((error) => 
+      console.log(error)
+    )
+  }, []);
+
+  console.log(TRAILER);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const firebaseApp = await firebaseAppPromise;
+        const database = getDatabase(firebaseApp);
+        const userId = localStorage.getItem("uid");
+        const favoriteRef = ref(database, `${userId}/list`);
+
+        onValue(favoriteRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const keys = Object.keys(data);
+            const isFavorite = keys.includes(id);
+            setIsInFavorite(isFavorite);
+          }
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchData();
+  }, [id]);
 
   useEffect(() => {
     dispatch(getMovieDetailAsync({ id }));
   }, []);
 
-  console.log(movieDetail);
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("at") ? true : false;
+    if (isLoggedIn) {
+      dispatch(getFavoriteAsync());
+    }
+  }, []);
+
+  useEffect(() => {
+    setIsInFavorite(isInFavorite);
+  }, [isInFavorite]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const handleAddToFavorite = () => {
+    const isLoggedIn = localStorage.getItem("at") ? true : false;
+    if (isLoggedIn) {
+      if (isInFavorite) {
+        dispatch(removeFavoriteAsync(movieDetail.id));
+      } else {
+        dispatch(addToFavoriteAsync({ movieDetail: movieDetail }));
+      }
+      setIsInFavorite(!isInFavorite);
+    } else {
+      return navigate("/sign-in");
+    }
+  };
+
+  
+
+  const handleIFrame = () => {
+    setIFrame(!iFrame);
+  }
 
   return (
     <div
@@ -57,8 +140,15 @@ export default function MovieDetail() {
             <div className="casting">
               <img src="" alt="" />
             </div>
-           <button className="button my-5">Xem ngay</button>
-           <button className="button my-5">Thêm vào danh sách</button>
+            <button className="button my-5" onClick={handleIFrame}>Xem ngay</button>
+            <button className="button my-5" onClick={handleAddToFavorite}>
+              {isInFavorite ? "Xóa khỏi danh sách" : "Thêm vào danh sách"}
+            </button>
+            {iFrame && (
+              <div class="ratio ratio-16x9 position-absolute" style={{top: '20%', left: '25%', width: '50%', height: '440px'}}>
+              <iframe src={trailer} title="YouTube video" allowfullscreen></iframe>
+            </div>
+            )}
           </div>
           <div className="col-md-6 text-center">
             <img
