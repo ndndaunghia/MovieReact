@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from "react";
 import logo from "./logo.png";
 import user from "./user.png";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import './style.css';
+import axios from "axios";
+import { API_KEY } from "../../API";
+import { useDispatch } from "react-redux";
+import { getSearchAsync } from "../../movies/search";
 
 export default function Header() {
   const accessToken = localStorage.getItem("at");
-
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isLoggedIn, setIsLoggedIn] = useState(accessToken ? true : false);
+  const [searchValue, setSearchValue] = useSearchParams();
+  const [query, setQuery] = useState(searchValue.get('q'));
 
   const logOut = () => {
     localStorage.removeItem("at");
@@ -20,6 +27,13 @@ export default function Header() {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
     setIsLoggedIn(isLoggedIn === 'true');
   }, [])
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    dispatch(getSearchAsync(query));
+    navigate(`/search?${query}`);
+    setQuery('');
+  }
   return (
     <nav
       className="navbar navbar-expand-lg fixed-top"
@@ -78,12 +92,14 @@ export default function Header() {
               </Link>
             </li>
           </ul>
-          <form className="d-flex input-group w-auto gap-2">
+          <form className="d-flex input-group w-auto gap-2" onSubmit={handleSearch}>
             <input
               type="search"
               className="form-control"
               placeholder="Phim, diễn viên..."
               aria-label="Search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
               style={{
                 backgroundColor: "transparent",
                 outline: "none",
@@ -110,25 +126,7 @@ export default function Header() {
                 notifications
               </span>
             </li>
-            {/* <li className="nav-item">
-              <a
-                className="nav-link"
-                href="#"
-                id="navbarDropdown"
-                role="button"
-                aria-expanded="false"
-              >
-                <img
-                  src={user}
-                  className="img-fluid rounded-1"
-                  height="40"
-                  width="40"
-                />
-                <ul>
-                  <li>Sign In</li>
-                </ul>
-              </a>
-            </li> */}
+           
             <li className="nav-item dropdown">
               <a
                 className="nav-link dropdown-toggle"

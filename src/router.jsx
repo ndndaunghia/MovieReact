@@ -7,6 +7,7 @@ import MyList from "./pages/MyList";
 import SignIn from "./pages/SignIn";
 import MovieDetail from "./Components/MovieDetail";
 import SignUp from "./pages/SignUp";
+import Search from "./pages/Search";
 
 const router = createBrowserRouter([
   {
@@ -61,6 +62,32 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/mylist/movie-detail/:id",
+        element: <MovieDetail />,
+      },
+    ],
+  },
+  {
+    path: "/search?",
+    element: (
+      <>
+        <Header />
+        <Search />
+        <Footer />
+      </>
+    ),
+  },
+  {
+    path: "/search/movie-detail/:id",
+    element: (
+      <>
+        <Header />
+        <Outlet />
+        <Footer />
+      </>
+    ),
+    children: [
+      {
+        path: "/search/movie-detail/:id",
         element: <MovieDetail />,
       },
     ],

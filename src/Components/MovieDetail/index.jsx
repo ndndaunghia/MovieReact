@@ -13,6 +13,8 @@ import {
 import { firebaseAppPromise } from "../../Firebase";
 import { getDatabase, onValue, ref } from "firebase/database";
 import { API_KEY, BASE_URL } from "../../API";
+import { Alert, Snackbar } from "@mui/material";
+
 
 export default function MovieDetail() {
   const { id } = useParams();
@@ -26,6 +28,9 @@ export default function MovieDetail() {
   const [isInFavorite, setIsInFavorite] = useState(false);
   const [iFrame, setIFrame] = useState(false);
   const [trailer, setTrailer] = useState('https://www.youtube.com/embed/');
+  const [showSuccessAddAlert, setShowSuccessAddAlert] = useState(false);
+  const [showSuccessRemoveAlert, setShowSuccessRemoveAlert] = useState(false);
+  const isLoggedIn = localStorage.getItem("at") ? true : false;
 
   useEffect(() => {
     axios.get(VID_URL).then((res) => 
@@ -85,12 +90,13 @@ export default function MovieDetail() {
   }, []);
 
   const handleAddToFavorite = () => {
-    const isLoggedIn = localStorage.getItem("at") ? true : false;
     if (isLoggedIn) {
       if (isInFavorite) {
         dispatch(removeFavoriteAsync(movieDetail.id));
+        setShowSuccessRemoveAlert(true);
       } else {
         dispatch(addToFavoriteAsync({ movieDetail: movieDetail }));
+        setShowSuccessAddAlert(true);
       }
       setIsInFavorite(!isInFavorite);
     } else {
@@ -101,7 +107,10 @@ export default function MovieDetail() {
   
 
   const handleIFrame = () => {
-    setIFrame(!iFrame);
+    if(isLoggedIn)
+      setIFrame(!iFrame);
+    else
+      return navigate('/sign-in');
   }
 
   return (
@@ -150,6 +159,32 @@ export default function MovieDetail() {
             </div>
             )}
           </div>
+          <Snackbar 
+            open={showSuccessAddAlert}
+            autoHideDuration={1500}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right'
+            }}
+            onClose={() => setShowSuccessAddAlert(false)}
+          >
+            <Alert onClose={() => setShowSuccessAddAlert(false)} severity="success">
+              Thêm vào danh sách thành công!
+            </Alert>
+          </Snackbar>
+          <Snackbar 
+            open={showSuccessRemoveAlert}
+            autoHideDuration={1500}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right'
+            }}
+            onClose={() => setShowSuccessRemoveAlert(false)}
+          >
+            <Alert onClose={() => setShowSuccessRemoveAlert(false)} severity="success">
+              Xóa khỏi danh sách thành công!
+            </Alert>
+          </Snackbar>
           <div className="col-md-6 text-center">
             <img
               src={IMAGE_URL + movieDetail.poster_path}
