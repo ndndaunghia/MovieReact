@@ -72,9 +72,9 @@ export default function Header() {
               </Link>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="#" style={{ color: "#e5e5e5" }}>
+              <Link className="nav-link" to='/tv-series' style={{ color: "#e5e5e5" }}>
                 Phim T.hình
-              </a>
+              </Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link" to='/all-movies' style={{ color: "#e5e5e5" }}>
@@ -96,7 +96,7 @@ export default function Header() {
             <input
               type="search"
               className="form-control"
-              placeholder="Phim, diễn viên..."
+              // placeholder="Phim, diễn viên..."
               aria-label="Search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -142,7 +142,7 @@ export default function Header() {
              {isLoggedIn ? (
                <ul className="dropdown-menu custom-menu" aria-labelledby="navbarDropdown" >
                <li style={{maxWidth: '120px'}}>
-                 <Link to="/sign-in" className="dropdown-item">
+                 <Link to="/profile" className="dropdown-item">
                    Tài khoản
                  </Link>
                </li>

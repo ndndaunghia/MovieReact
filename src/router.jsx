@@ -9,6 +9,9 @@ import MovieDetail from "./Components/MovieDetail";
 import SignUp from "./pages/SignUp";
 import Search from "./pages/Search";
 import AllMovies from "./pages/AllMovies";
+import TVSeries from "./pages/TvSeries";
+import Profile from "./pages/Profile";
+import ForgotPassword from "./pages/Forgot-Password";
 
 const router = createBrowserRouter([
   {
@@ -36,6 +39,10 @@ const router = createBrowserRouter([
     element: <SignUp />,
   },
   {
+    path: 'forgot-password',
+    element: <ForgotPassword/>
+  },
+  {
     path: "/mylist",
     element: (
       <>
@@ -50,6 +57,16 @@ const router = createBrowserRouter([
         element: <MyList />,
       },
     ],
+  },
+  {
+    path: '/profile',
+    element: (
+      <>
+      <Header/>
+      <Profile/>
+      <Footer/>
+      </>
+    )
   },
   {
     path: "/mylist/movie-detail/:id",
@@ -125,6 +142,32 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/all-movies/movie-detail/:id",
+        element: <MovieDetail />,
+      },
+    ],
+  },
+  {
+    path: "/tv-series",
+    element: (
+      <>
+        <Header />
+        <TVSeries/>
+        <Footer />
+      </>
+    ),
+  },
+  {
+    path: "/tv-series/movie-detail/:id",
+    element: (
+      <>
+        <Header />
+        <Outlet />
+        <Footer />
+      </>
+    ),
+    children: [
+      {
+        path: "/tv-series/movie-detail/:id",
         element: <MovieDetail />,
       },
     ],

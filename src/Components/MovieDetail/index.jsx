@@ -15,38 +15,36 @@ import { getDatabase, onValue, ref } from "firebase/database";
 import { API_KEY, BASE_URL } from "../../API";
 import { Alert, Snackbar } from "@mui/material";
 
-
 export default function MovieDetail() {
   const { id } = useParams();
   const IMAGE_URL = "https://image.tmdb.org/t/p/original";
   const VID_URL = BASE_URL + id + `/videos?language=en-US&` + API_KEY;
-  var TRAILER = 'https://www.youtube.com/embed/';
+  var TRAILER = "https://www.youtube.com/embed/";
   const movieDetail = useSelector((state) => state.movieDetail.movieDetail);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [isInFavorite, setIsInFavorite] = useState(false);
   const [iFrame, setIFrame] = useState(false);
-  const [trailer, setTrailer] = useState('https://www.youtube.com/embed/');
+  const [trailer, setTrailer] = useState("https://www.youtube.com/embed/");
   const [showSuccessAddAlert, setShowSuccessAddAlert] = useState(false);
   const [showSuccessRemoveAlert, setShowSuccessRemoveAlert] = useState(false);
   const isLoggedIn = localStorage.getItem("at") ? true : false;
 
   useEffect(() => {
-    axios.get(VID_URL).then((res) => 
-     {
-      // console.log(res.data.results);
-      const getLinkTrailer = res.data.results.filter((trailer) => trailer.name === 'Official Trailer')
-      const trailerKey = getLinkTrailer[0].key;
-      const newTrailer = 'https://www.youtube.com/embed/' + trailerKey;
-      setTrailer(newTrailer);
-     }
-    ).catch((error) => 
-      console.log(error)
-    )
+    axios
+      .get(VID_URL)
+      .then((res) => {
+        // console.log(res.data.results);
+        const getLinkTrailer = res.data.results.filter(
+          (trailer) => trailer.name === "Official Trailer"
+        );
+        const trailerKey = getLinkTrailer[0].key;
+        const newTrailer = "https://www.youtube.com/embed/" + trailerKey;
+        setTrailer(newTrailer);
+      })
+      .catch((error) => console.log(error));
   }, []);
-
-  console.log(TRAILER);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -106,14 +104,10 @@ export default function MovieDetail() {
     }
   };
 
-  
-
   const handleIFrame = () => {
-    if(isLoggedIn)
-      setIFrame(!iFrame);
-    else
-      return navigate('/sign-in');
-  }
+    if (isLoggedIn) setIFrame(!iFrame);
+    else return navigate("/sign-in");
+  };
 
   return (
     <div
@@ -151,39 +145,65 @@ export default function MovieDetail() {
             <div className="casting">
               <img src="" alt="" />
             </div>
-            <button className="button my-5" onClick={handleIFrame}>Xem ngay</button>
+            {iFrame ? (
+              <button className="button my-5" onClick={handleIFrame}>
+                Bỏ xem
+              </button>
+            ) : (
+              <button className="button my-5" onClick={handleIFrame}>
+                Xem ngay
+              </button>
+            )}
+            {iFrame && (
+              <div
+                class="ratio ratio-16x9 position-absolute"
+                style={{
+                  top: "20%",
+                  left: "25%",
+                  width: "50%",
+                  height: "440px",
+                }}
+              >
+                <iframe
+                  src={trailer}
+                  title="YouTube video"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            )}
             <button className="button my-5" onClick={handleAddToFavorite}>
               {isInFavorite ? "Xóa khỏi danh sách" : "Thêm vào danh sách"}
             </button>
-            {iFrame && (
-              <div class="ratio ratio-16x9 position-absolute" style={{top: '20%', left: '25%', width: '50%', height: '440px'}}>
-              <iframe src={trailer} title="YouTube video" allowfullscreen></iframe>
-            </div>
-            )}
           </div>
-          <Snackbar 
+          <Snackbar
             open={showSuccessAddAlert}
             autoHideDuration={1500}
             anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right'
+              vertical: "top",
+              horizontal: "right",
             }}
             onClose={() => setShowSuccessAddAlert(false)}
           >
-            <Alert onClose={() => setShowSuccessAddAlert(false)} severity="success">
+            <Alert
+              onClose={() => setShowSuccessAddAlert(false)}
+              severity="success"
+            >
               Thêm vào danh sách thành công!
             </Alert>
           </Snackbar>
-          <Snackbar 
+          <Snackbar
             open={showSuccessRemoveAlert}
             autoHideDuration={1500}
             anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right'
+              vertical: "top",
+              horizontal: "right",
             }}
             onClose={() => setShowSuccessRemoveAlert(false)}
           >
-            <Alert onClose={() => setShowSuccessRemoveAlert(false)} severity="success">
+            <Alert
+              onClose={() => setShowSuccessRemoveAlert(false)}
+              severity="success"
+            >
               Xóa khỏi danh sách thành công!
             </Alert>
           </Snackbar>
