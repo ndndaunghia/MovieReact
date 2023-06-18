@@ -19,7 +19,7 @@ import { Alert, Snackbar } from "@mui/material";
 export default function MovieDetail() {
   const { id } = useParams();
   const IMAGE_URL = "https://image.tmdb.org/t/p/original";
-  const VID_URL = BASE_URL + id + `/videos?language=vi-VN&` + API_KEY;
+  const VID_URL = BASE_URL + id + `/videos?language=en-US&` + API_KEY;
   var TRAILER = 'https://www.youtube.com/embed/';
   const movieDetail = useSelector((state) => state.movieDetail.movieDetail);
   const dispatch = useDispatch();
@@ -35,7 +35,9 @@ export default function MovieDetail() {
   useEffect(() => {
     axios.get(VID_URL).then((res) => 
      {
-      const trailerKey = res.data.results[0].key;
+      // console.log(res.data.results);
+      const getLinkTrailer = res.data.results.filter((trailer) => trailer.name === 'Official Trailer')
+      const trailerKey = getLinkTrailer[0].key;
       const newTrailer = 'https://www.youtube.com/embed/' + trailerKey;
       setTrailer(newTrailer);
      }

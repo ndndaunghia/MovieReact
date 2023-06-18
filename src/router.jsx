@@ -8,6 +8,7 @@ import SignIn from "./pages/SignIn";
 import MovieDetail from "./Components/MovieDetail";
 import SignUp from "./pages/SignUp";
 import Search from "./pages/Search";
+import AllMovies from "./pages/AllMovies";
 
 const router = createBrowserRouter([
   {
@@ -101,6 +102,32 @@ const router = createBrowserRouter([
         <Footer />
       </div>
     ),
+  },
+  {
+    path: "/all-movies",
+    element: (
+      <>
+        <Header />
+        <AllMovies />
+        <Footer />
+      </>
+    ),
+  },
+  {
+    path: "/all-movies/movie-detail/:id",
+    element: (
+      <>
+        <Header />
+        <Outlet />
+        <Footer />
+      </>
+    ),
+    children: [
+      {
+        path: "/all-movies/movie-detail/:id",
+        element: <MovieDetail />,
+      },
+    ],
   },
 ]);
 

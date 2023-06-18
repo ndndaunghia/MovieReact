@@ -77,9 +77,9 @@ export default function Header() {
               </a>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="#" style={{ color: "#e5e5e5" }}>
+              <Link className="nav-link" to='/all-movies' style={{ color: "#e5e5e5" }}>
                 Phim
-              </a>
+              </Link>
             </li>
             <li className="nav-item">
               <a className="nav-link" href="#" style={{ color: "#e5e5e5" }}>
@@ -102,9 +102,10 @@ export default function Header() {
               onChange={(e) => setQuery(e.target.value)}
               style={{
                 backgroundColor: "transparent",
+                color: 'white',
                 outline: "none",
                 border: "none",
-                borderBottom: "1px solid",
+                borderBottom: "1px solid black",
                 borderRadius: "0",
                 boxShadow: "none",
                 padding: "0",
