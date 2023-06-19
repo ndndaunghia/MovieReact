@@ -1,0 +1,7 @@
+.link-a > a {
+    opacity: 0.6;
+}
+
+.link-a > a:hover {
+    opacity: 1;
+}

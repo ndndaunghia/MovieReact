@@ -49,9 +49,9 @@ export default function MovieDetail() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const userId = localStorage.getItem("uid");
         const firebaseApp = await firebaseAppPromise;
         const database = getDatabase(firebaseApp);
-        const userId = localStorage.getItem("uid");
         const favoriteRef = ref(database, `${userId}/list`);
 
         onValue(favoriteRef, (snapshot) => {
@@ -177,7 +177,7 @@ export default function MovieDetail() {
           </div>
           <Snackbar
             open={showSuccessAddAlert}
-            autoHideDuration={1500}
+            autoHideDuration={800}
             anchorOrigin={{
               vertical: "top",
               horizontal: "right",
@@ -193,7 +193,7 @@ export default function MovieDetail() {
           </Snackbar>
           <Snackbar
             open={showSuccessRemoveAlert}
-            autoHideDuration={1500}
+            autoHideDuration={800}
             anchorOrigin={{
               vertical: "top",
               horizontal: "right",

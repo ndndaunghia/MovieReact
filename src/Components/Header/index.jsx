@@ -21,6 +21,7 @@ export default function Header() {
     localStorage.removeItem("uid");
     localStorage.setItem("isLoggedIn", JSON.stringify(false));
     setIsLoggedIn(false);
+    // window.location.reload()
   };
 
   useEffect(() => {
@@ -105,7 +106,7 @@ export default function Header() {
                 color: 'white',
                 outline: "none",
                 border: "none",
-                borderBottom: "1px solid black",
+                borderBottom: "1px solid white",
                 borderRadius: "0",
                 boxShadow: "none",
                 padding: "0",
@@ -148,7 +149,7 @@ export default function Header() {
                </li>
   
                <li style={{maxWidth: '120px'}}>
-                 <Link to="/" className="dropdown-item" onClick={logOut}>
+                 <Link to="/sign-in" className="dropdown-item" onClick={logOut}>
                    Đăng xuất
                  </Link>
                </li>

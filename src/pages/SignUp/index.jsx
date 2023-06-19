@@ -37,7 +37,7 @@ export default function SignUp() {
               setShowSuccessAlert(true);
               setTimeout(() => {
                 navigate("/sign-in");
-              }, 3000);
+              }, 1200);
             })
             .catch((error) => {
               console.log(error);
@@ -191,7 +191,7 @@ export default function SignUp() {
 
         <Snackbar
           open={showSuccessAlert}
-          autoHideDuration={1500}
+          autoHideDuration={800}
           anchorOrigin={{
             vertical: "top",
             horizontal: "right",

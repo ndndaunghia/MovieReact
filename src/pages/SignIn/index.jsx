@@ -139,13 +139,13 @@ export default function SignIn() {
             </div>
             <div className="mb-4">
               <span>Bạn mới tham gia Netflix?</span>
-              <a
-                href=""
+              <Link
+                to='/sign-up'
                 className="text-decoration-none ms-1"
                 style={{ color: "white" }}
               >
                 Đăng ký ngay
-              </a>
+              </Link>
             </div>
           </form>
         </div>

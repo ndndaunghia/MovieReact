@@ -20,7 +20,7 @@ const BannerWrapper = styled.header`
   height: 620px;
   color: white;
   object-fit: contain;
-  opacity: 0.9;
+  opacity: 0.8;
 `;
 
 const BannerContent = styled.div`
