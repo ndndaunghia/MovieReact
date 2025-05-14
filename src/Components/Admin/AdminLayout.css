@@ -1,0 +1,107 @@
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f4f6fb;
+}
+
+.admin-sidebar {
+  width: 260px;
+  background: linear-gradient(135deg, #232526 0%, #414345 100%);
+  color: #fff;
+  padding: 0 0 20px 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 12px rgba(0,0,0,0.08);
+  border-radius: 0 20px 20px 0;
+}
+
+.admin-logo {
+  padding: 32px 0 16px 0;
+  text-align: center;
+  border-bottom: 1px solid #333;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.admin-logo h2 {
+  font-weight: 700;
+  letter-spacing: 2px;
+  font-size: 1.6rem;
+  margin: 0;
+}
+
+.admin-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 24px 0 12px 0;
+}
+.admin-avatar img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  margin-bottom: 8px;
+}
+.admin-avatar span {
+  font-size: 1rem;
+  color: #eee;
+  font-weight: 500;
+}
+
+.admin-nav {
+  flex: 1;
+  margin-top: 16px;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 24px;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 8px;
+  margin: 6px 12px;
+  font-size: 1.08rem;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+.admin-nav-item .icon {
+  margin-right: 14px;
+  font-size: 1.2rem;
+}
+.admin-nav-item:hover, .admin-nav-item.active {
+  background: #007bff;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0,123,255,0.08);
+}
+
+.admin-content {
+  flex: 1;
+  padding: 36px 40px;
+  background: #f4f6fb;
+  border-radius: 20px 0 0 20px;
+  min-height: 100vh;
+}
+
+.admin-footer {
+  margin-top: auto;
+  padding: 20px 24px 0 24px;
+  border-top: 1px solid #333;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(90deg, #e52d27 0%, #b31217 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+.logout-btn:hover {
+  background: linear-gradient(90deg, #b31217 0%, #e52d27 100%);
+} 

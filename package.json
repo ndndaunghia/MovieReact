@@ -22,6 +22,7 @@
     "redux-saga": "^1.2.3",
     "slick-carousel": "^1.8.1",
     "styled-components": "^5.3.10",
+    "tailwindcss-animate": "^1.0.7",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

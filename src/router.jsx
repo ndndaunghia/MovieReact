@@ -1,4 +1,5 @@
-import { Outlet, createBrowserRouter } from "react-router-dom";
+import React from 'react';
+import { Outlet, createBrowserRouter, Navigate } from "react-router-dom";
 import { Children } from "react";
 import Header from "./Components/Header";
 import Footer from "./Components/Footer";
@@ -12,8 +13,38 @@ import AllMovies from "./pages/AllMovies";
 import TVSeries from "./pages/TvSeries";
 import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/Forgot-Password";
+import AdminLayout from './Components/Admin/AdminLayout';
+import Dashboard from './pages/Admin/Dashboard';
+import UserManagement from './pages/Admin/UserManagement';
 
-const router = createBrowserRouter([
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  return children;
+};
+
+// Admin Routes
+const adminRoutes = {
+  path: '/admin',
+  element: (
+    <ProtectedRoute isAdmin={true}>
+      <AdminLayout />
+    </ProtectedRoute>
+  ),
+  children: [
+    {
+      path: 'dashboard',
+      element: <Dashboard />,
+    },
+    {
+      path: 'users',
+      element: <UserManagement />,
+    },
+    // Thêm các route admin khác ở đây
+  ],
+};
+
+// Public Routes
+const publicRoutes = [
   {
     path: "/",
     element: (
@@ -172,6 +203,9 @@ const router = createBrowserRouter([
       },
     ],
   },
-]);
+];
+
+// Combine all routes
+const router = createBrowserRouter([...publicRoutes, adminRoutes]);
 
 export default router;
