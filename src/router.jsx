@@ -14,8 +14,9 @@ import TVSeries from "./pages/TvSeries";
 import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/Forgot-Password";
 import AdminLayout from './Components/Admin/AdminLayout';
-import Dashboard from './pages/Admin/Dashboard';
+import Dashboard from './pages/Admin/Dashboard/Dashboard';
 import UserManagement from './pages/Admin/UserManagement';
+import Movies from './pages/Admin/Movies/Movies';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -38,6 +39,10 @@ const adminRoutes = {
     {
       path: 'users',
       element: <UserManagement />,
+    },
+    {
+      path: 'movies',
+      element: <Movies />,
     },
     // Thêm các route admin khác ở đây
   ],
