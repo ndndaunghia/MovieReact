@@ -1,6 +1,5 @@
 import React from 'react';
 import { Outlet, createBrowserRouter, Navigate } from "react-router-dom";
-import { Children } from "react";
 import Header from "./Components/Header";
 import Footer from "./Components/Footer";
 import HomeMovies from "./Components/HomeMovies";
@@ -17,11 +16,9 @@ import AdminLayout from './Components/Admin/AdminLayout';
 import Dashboard from './pages/Admin/Dashboard/Dashboard';
 import UserManagement from './pages/Admin/UserManagement';
 import Movies from './pages/Admin/Movies/Movies';
-
-// Protected Route Component
-const ProtectedRoute = ({ children }) => {
-  return children;
-};
+import ProtectedRoute from './Components/ProtectedRoute/ProtectedRoute';
+import PublicRoute from './Components/PublicRoute/PublicRoute';
+import Categories from './pages/Admin/Categories/Categories';
 
 // Admin Routes
 const adminRoutes = {
@@ -44,7 +41,10 @@ const adminRoutes = {
       path: 'movies',
       element: <Movies />,
     },
-    // Thêm các route admin khác ở đây
+    {
+      path: 'categories',
+      element: <Categories />,
+    }
   ],
 };
 
@@ -68,24 +68,36 @@ const publicRoutes = [
   },
   {
     path: "/sign-in",
-    element: <SignIn />,
+    element: (
+      <PublicRoute>
+        <SignIn />
+      </PublicRoute>
+    ),
   },
   {
     path: "/sign-up",
-    element: <SignUp />,
+    element: (
+      <PublicRoute>
+        <SignUp />
+      </PublicRoute>
+    ),
   },
   {
     path: 'forgot-password',
-    element: <ForgotPassword/>
+    element: (
+      <PublicRoute>
+        <ForgotPassword />
+      </PublicRoute>
+    ),
   },
   {
     path: "/mylist",
     element: (
-      <>
+      <ProtectedRoute>
         <Header />
         <Outlet />
         <Footer />
-      </>
+      </ProtectedRoute>
     ),
     children: [
       {
@@ -97,21 +109,21 @@ const publicRoutes = [
   {
     path: '/profile',
     element: (
-      <>
-      <Header/>
-      <Profile/>
-      <Footer/>
-      </>
-    )
+      <ProtectedRoute>
+        <Header />
+        <Profile />
+        <Footer />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/mylist/movie-detail/:id",
     element: (
-      <>
+      <ProtectedRoute>
         <Header />
         <Outlet />
         <Footer />
-      </>
+      </ProtectedRoute>
     ),
     children: [
       {
@@ -121,7 +133,7 @@ const publicRoutes = [
     ],
   },
   {
-    path: "/search?",
+    path: "/search",
     element: (
       <>
         <Header />
@@ -149,11 +161,11 @@ const publicRoutes = [
   {
     path: "/movie-detail/:id",
     element: (
-      <div>
+      <>
         <Header />
         <MovieDetail />
         <Footer />
-      </div>
+      </>
     ),
   },
   {
@@ -187,7 +199,7 @@ const publicRoutes = [
     element: (
       <>
         <Header />
-        <TVSeries/>
+        <TVSeries />
         <Footer />
       </>
     ),

@@ -6,50 +6,36 @@ import "./style.css";
 import { useNavigate } from "react-router-dom";
 import app from "../../Firebase";
 import { Alert, Snackbar } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { getMe, register } from "../../redux/slices/authSlice";
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
-  const [userName, setUserName] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
   const [showWarningAlert, setShowWarningAlert] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    const auth = getAuth();
-
-    if (password === confirmPw) {
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          const userData = {
-            email: user.email,
-            userName: userName,
-          };
-
-          const db = getFirestore(app);
-          addDoc(collection(db, "users"), userData)
-            .then((docRef) => {
-              console.log("id: ", docRef.id);
-              setShowSuccessAlert(true);
-              setTimeout(() => {
-                navigate("/sign-in");
-              }, 1200);
-            })
-            .catch((error) => {
-              console.log(error);
-              setShowErrorAlert(true);
-            });
-        })
-        .catch((error) => {
-          console.log(error);
-          setShowErrorAlert(true);
-        });
-    } else {
-      setShowWarningAlert(true);
+    try {
+      await dispatch(register({name, email, password})).unwrap();
+      const userData = await dispatch(getMe()).unwrap();
+      
+      setShowSuccessAlert(true);
+      
+      if (userData?.data?.type === 1) {
+        navigate('/admin/dashboard'); // Redirect to admin dashboard
+      } else {
+        navigate('/'); // Redirect to home for clients
+      }
+    }
+    catch (error) {
+      setShowErrorAlert(true);
     }
   };
 
@@ -98,7 +84,7 @@ export default function SignUp() {
             </div>
             <div className="mb-3">
               <label
-                htmlFor="userName"
+                htmlFor="name"
                 className="form-label"
                 style={{ color: "#8c8c8c" }}
               >
@@ -107,10 +93,10 @@ export default function SignUp() {
               <input
                 type="text"
                 className="form-control"
-                id="userName"
+                id="name"
                 required
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 style={{
                   background: "#333",
                   border: "none",

@@ -1,29 +1,31 @@
-"use client"
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom"
 import "./AdminLayout.css"
+import { useDispatch } from "react-redux"
+import { logout } from "../../redux/slices/authSlice"
 
 const AdminLayout = () => {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const location = useLocation()
   const user = JSON.parse(localStorage.getItem("user") || "{}")
 
   const menuItems = [
-    { path: "/admin/dashboard", label: "Dashboard", icon: "📊" },
-    { path: "/admin/movies", label: "Movies", icon: "🎬" },
-    { path: "/admin/users", label: "Users", icon: "👥" },
-    { path: "/admin/categories", label: "Categories", icon: "📑" },
+    { path: "/admin/dashboard", label: "Trang chủ", icon: "📊" },
+    { path: "/admin/movies", label: "Danh sách phim", icon: "🎬" },
+    { path: "/admin/users", label: "Danh sách người dùng", icon: "👥" },
+    { path: "/admin/categories", label: "Danh mục phim", icon: "📑" },
   ]
 
   const handleLogout = () => {
-    localStorage.removeItem("user")
-    navigate("/sign-in")
+    dispatch(logout());
+    navigate('/sign-in');
   }
 
   return (
     <div className="admin-layout">
       <div className="admin-sidebar">
         <div className="admin-logo">
-          <h2>Admin Panel</h2>
+          <h2>Quản lý phim</h2>
         </div>
         <div className="admin-avatar">
           <img src="https://i.pravatar.cc/150?img=12" alt="avatar" />

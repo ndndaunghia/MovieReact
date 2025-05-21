@@ -1,9 +1,7 @@
-// MovieModal.jsx - Phiên bản đơn giản hóa
 import React, { useEffect } from "react";
-import "./MovieModal.css"; // Đổi tên file CSS cho rõ ràng
+import "./MovieModal.css"; 
 
 const MovieModal = ({ isOpen, onClose, title, children, footer }) => {
-  // Ngăn cuộn trang khi modal mở
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -21,7 +19,6 @@ const MovieModal = ({ isOpen, onClose, title, children, footer }) => {
 
   console.log("Rendering modal with title:", title);
 
-  // Sử dụng inline styles thay vì CSS để loại bỏ các vấn đề liên quan đến CSS
   return (
     <div className="movie-modal-overlay" onClick={onClose}>
       <div className="movie-modal" onClick={e => e.stopPropagation()}>

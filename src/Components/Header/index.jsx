@@ -3,38 +3,42 @@ import logo from "./logo.png";
 import user from "./user.png";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import './style.css';
-import axios from "axios";
-import { API_KEY } from "../../API";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getSearchAsync } from "../../movies/search";
+import { getMe, logout } from "../../redux/slices/authSlice";
+import { getLocalStorage } from "../../utils/local-store";
 
 export default function Header() {
-  const accessToken = localStorage.getItem("at");
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [isLoggedIn, setIsLoggedIn] = useState(accessToken ? true : false);
+  const { user } = useSelector((state) => state.auth);
   const [searchValue, setSearchValue] = useSearchParams();
-  const [query, setQuery] = useState(searchValue.get('q'));
+  const [query, setQuery] = useState(searchValue.get('q') || '');
 
-  const logOut = () => {
-    localStorage.removeItem("at");
-    localStorage.removeItem("uid");
-    localStorage.setItem("isLoggedIn", JSON.stringify(false));
-    setIsLoggedIn(false);
-    // window.location.reload()
-  };
+  const isLoggedIn = !!user;
+  const userName = user?.data?.name || 'User';
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn")
-    setIsLoggedIn(isLoggedIn === 'true');
-  }, [])
+    const token = getLocalStorage('token');
+    if (token && !user) {
+      dispatch(getMe());
+    }
+  }, [dispatch, user?.data?.id]);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/sign-in');
+  };
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    dispatch(getSearchAsync(query));
-    navigate(`/search?${query}`);
-    setQuery('');
-  }
+    if (query) {
+      dispatch(getSearchAsync(query));
+      navigate(`/search?q=${query}`);
+      setQuery('');
+    }
+  };
+
   return (
     <nav
       className="navbar navbar-expand-lg fixed-top"
@@ -42,7 +46,7 @@ export default function Header() {
     >
       <div className="container-fluid">
         <Link className="navbar-brand" to='/'>
-          <img src={logo} alt="" loading="lazy" style={{ width: "100px" }} />
+          <img src={logo} alt="Logo" loading="lazy" style={{ width: "100px" }} />
         </Link>
 
         <button
@@ -54,19 +58,16 @@ export default function Header() {
           aria-expanded="false"
           aria-label="Toggle navigation"
         >
-          <span
-            className="navbar-toggler-icon"
-            style={{ color: "white" }}
-          ></span>
+          <span className="navbar-toggler-icon" style={{ color: "white" }}></span>
         </button>
 
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <Link to='/'
+              <Link
+                to='/'
                 className="nav-link active"
                 aria-current="page"
-                href="#"
                 style={{ color: "white", fontWeight: "600" }}
               >
                 Trang chủ
@@ -97,7 +98,7 @@ export default function Header() {
             <input
               type="search"
               className="form-control"
-              // placeholder="Phim, diễn viên..."
+              placeholder="Phim, diễn viên..."
               aria-label="Search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -115,12 +116,13 @@ export default function Header() {
             <span
               className="material-symbols-outlined search-icon d-flex justify-content-center align-items-center mx-2"
               style={{ color: "white", cursor: "pointer" }}
+              onClick={handleSearch}
             >
               search
             </span>
           </form>
           <ul className="navbar-nav mb-2 mb-lg-0">
-            <li className="nav-item  d-flex align-items-center">
+            <li className="nav-item d-flex align-items-center">
               <span
                 className="material-symbols-outlined notifications-icon"
                 style={{ color: "white", cursor: "pointer" }}
@@ -128,7 +130,6 @@ export default function Header() {
                 notifications
               </span>
             </li>
-           
             <li className="nav-item dropdown">
               <a
                 className="nav-link dropdown-toggle"
@@ -136,38 +137,41 @@ export default function Header() {
                 id="navbarDropdown"
                 role="button"
                 data-bs-toggle="dropdown"
-                // aria-expanded="false"
+                aria-expanded="false"
               >
-                <img src={user} className="img-fluid rounded-1" height="40" width="40" alt="" />
+                {isLoggedIn ? (
+                  <span style={{ color: "white" }}>{userName}</span>
+                ) : (
+                  <img src={user} className="img-fluid rounded-1" height="40" width="40" alt="User" />
+                )}
               </a>
-             {isLoggedIn ? (
-               <ul className="dropdown-menu custom-menu" aria-labelledby="navbarDropdown" >
-               <li style={{maxWidth: '120px'}}>
-                 <Link to="/profile" className="dropdown-item">
-                   Tài khoản
-                 </Link>
-               </li>
-  
-               <li style={{maxWidth: '120px'}}>
-                 <Link to="/sign-in" className="dropdown-item" onClick={logOut}>
-                   Đăng xuất
-                 </Link>
-               </li>
-             </ul>
-             ) : (
-              <ul className="dropdown-menu custom-menu" aria-labelledby="navbarDropdown" >
-              <li style={{maxWidth: '120px'}}>
-                <Link to="/sign-in" className="dropdown-item">
-                  Đăng nhập
-                </Link>
-              </li>
-              <li style={{maxWidth: '120px'}}>
-                <Link to="/sign-up" className="dropdown-item">
-                  Đăng ký
-                </Link>
-              </li>
-            </ul>
-             )}
+              {isLoggedIn ? (
+                <ul className="dropdown-menu custom-menu" aria-labelledby="navbarDropdown">
+                  <li style={{ maxWidth: '120px' }}>
+                    <Link to="/profile" className="dropdown-item">
+                      Tài khoản
+                    </Link>
+                  </li>
+                  <li style={{ maxWidth: '120px' }}>
+                    <a className="dropdown-item" onClick={handleLogout}>
+                      Đăng xuất
+                    </a>
+                  </li>
+                </ul>
+              ) : (
+                <ul className="dropdown-menu custom-menu" aria-labelledby="navbarDropdown">
+                  <li style={{ maxWidth: '120px' }}>
+                    <Link to="/sign-in" className="dropdown-item">
+                      Đăng nhập
+                    </Link>
+                  </li>
+                  <li style={{ maxWidth: '120px' }}>
+                    <Link to="/sign-up" className="dropdown-item">
+                      Đăng ký
+                    </Link>
+                  </li>
+                </ul>
+              )}
             </li>
           </ul>
         </div>

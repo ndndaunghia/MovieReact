@@ -1,178 +1,215 @@
-import React, { useState } from "react";
-import "./Movies.css";
-import MovieModal from "./MovieModal";
+import { useState, useEffect } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import "./Movies.css"
+import MovieModal from "./MovieModal"
+import { useCloudinary } from "../../../hooks/useCloudinary"
+import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_PRESENT_NAME } from "../../../utils/cloudinary-config"
+import {
+  fetchVideos,
+  createVideo,
+  updateVideo,
+  deleteVideo,
+  clearError,
+} from "../../../redux/slices/videosSlice"
+import { fetchCategories } from "../../../redux/slices/categoriesSlice"
+import Loading from "../../../Components/common/Loading/Loading"
+import FileUploadLoading from "../../../Components/common/FileUploadLoading/FileUploadLoading"
+import toast, { Toaster } from "react-hot-toast"
 
 const Movies = () => {
-  // State cho danh sách phim
-  const [movies, setMovies] = useState([
-    {
-      id: 1,
-      title: "Avengers: Endgame",
-      poster: "https://via.placeholder.com/40x60",
-      category: "Hành động",
-      director: "Anthony Russo, Joe Russo",
-      year: 2019,
-      duration: 181,
-      status: "published",
-    },
-    {
-      id: 2,
-      title: "Joker",
-      poster: "https://via.placeholder.com/40x60",
-      category: "Tâm lý",
-      director: "Todd Phillips",
-      year: 2019,
-      duration: 122,
-      status: "published",
-    },
-    {
-      id: 3,
-      title: "Parasite",
-      poster: "https://via.placeholder.com/40x60",
-      category: "Kinh dị",
-      director: "Bong Joon-ho",
-      year: 2019,
-      duration: 132,
-      status: "draft",
-    },
-    {
-      id: 4,
-      title: "The Shawshank Redemption",
-      poster: "https://via.placeholder.com/40x60",
-      category: "Tâm lý",
-      director: "Frank Darabont",
-      year: 1994,
-      duration: 142,
-      status: "published",
-    },
-    {
-      id: 5,
-      title: "Inception",
-      poster: "https://via.placeholder.com/40x60",
-      category: "Khoa học viễn tưởng",
-      director: "Christopher Nolan",
-      year: 2010,
-      duration: 148,
-      status: "published",
-    },
-    {
-      id: 6,
-      title: "The Dark Knight",
-      poster: "https://via.placeholder.com/40x60",
-      category: "Hành động",
-      director: "Christopher Nolan",
-      year: 2008,
-      duration: 152,
-      status: "published",
-    },
-    {
-      id: 7,
-      title: "Pulp Fiction",
-      poster: "https://via.placeholder.com/40x60",
-      category: "Tội phạm",
-      director: "Quentin Tarantino",
-      year: 1994,
-      duration: 154,
-      status: "published",
-    },
-  ]);
+  const dispatch = useDispatch()
+  const { videos, loading, error, totalVideos, currentPage, perPage } = useSelector((state) => state.videos)
+  const { categories } = useSelector((state) => state.categories)
 
-  // State cho tìm kiếm và lọc
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
+  // State cho loading
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [processingText, setProcessingText] = useState("Đang xử lý...")
+
+  // State cho tìm kiếm và phân trang
+  const [searchTerm, setSearchTerm] = useState("")
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
+  const [page, setPage] = useState(1)
 
   // State cho modal
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [currentMovie, setCurrentMovie] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showViewModal, setShowViewModal] = useState(false)
+  const [currentMovie, setCurrentMovie] = useState(null)
 
   // State cho form
   const [formData, setFormData] = useState({
-    title: "",
-    category: "",
-    director: "",
-    year: new Date().getFullYear(),
-    duration: 90,
+    category_id: "",
+    name: "",
+    thumbnail_url: "",
+    video_url: "",
+    banner_url: "",
     description: "",
-    status: "draft",
-  });
+  })
+
+  // State cho preview
+  const [imagePreview, setImagePreview] = useState(null)
+  const [bannerPreview, setBannerPreview] = useState(null)
 
   // State cho validation
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({})
 
-  // Danh sách các danh mục
-  const categories = [
-    "Hành động",
-    "Tâm lý",
-    "Kinh dị",
-    "Hài",
-    "Tình cảm",
-    "Khoa học viễn tưởng",
-    "Phiêu lưu",
-    "Hoạt hình",
-    "Tội phạm",
-    "Tài liệu",
-  ];
+  const { uploadImage, uploadVideo, isUploading } = useCloudinary({
+    cloudName: CLOUDINARY_CLOUD_NAME,
+    uploadPreset: CLOUDINARY_PRESENT_NAME,
+  })
 
-  // Lọc phim dựa trên các bộ lọc
-  const filteredMovies = movies.filter((movie) => {
-    const matchesSearch = movie.title
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      categoryFilter === "all" || movie.category === categoryFilter;
-    const matchesStatus =
-      statusFilter === "all" || movie.status === statusFilter;
-
-    return matchesSearch && matchesCategory && matchesStatus;
+  // State cho từng field đang upload
+  const [uploadingFields, setUploadingFields] = useState({
+    thumbnail_url: false,
+    banner_url: false,
+    video_url: false
   });
 
-  // Xử lý thay đổi form
+  // Fetch videos khi trang, perPage hoặc searchTerm thay đổi
+  useEffect(() => {
+    dispatch(fetchVideos({ page, perPage, searchTerm: debouncedSearchTerm }))
+  }, [dispatch, page, perPage, debouncedSearchTerm])
+
+  useEffect(() => {
+    dispatch(fetchCategories())
+  }, [dispatch])
+
+  // Hiển thị thông báo lỗi từ Redux store
+  useEffect(() => {
+    if (error) {
+      toast.error(error.detail.description || "Có lỗi xảy ra, vui lòng thử lại!")
+      dispatch(clearError()) // Xóa lỗi sau khi hiển thị
+    }
+  }, [error, dispatch])
+
+  // Debounce searchTerm để tránh gọi API quá nhiều lần
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+      setPage(1) // Reset về trang 1 khi tìm kiếm
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  // Xử lý tìm kiếm
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value)
+  }
+
+  // Xử lý phân trang
+  const handlePageChange = (newPage) => {
+    setPage(newPage)
+  }
+
+  // Tạo mảng các trang để hiển thị
+  const totalPages = Math.ceil(totalVideos / perPage)
+  const pageNumbers = []
+  const maxPageButtons = 5
+
+  if (totalPages <= maxPageButtons) {
+    for (let i = 1; i <= totalPages; i++) {
+      pageNumbers.push(i)
+    }
+  } else {
+    let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2))
+    let endPage = Math.min(totalPages, startPage + maxPageButtons - 1)
+
+    if (endPage - startPage + 1 < maxPageButtons) {
+      startPage = Math.max(1, endPage - maxPageButtons + 1)
+    }
+
+    if (startPage > 1) {
+      pageNumbers.push(1)
+      if (startPage > 2) pageNumbers.push('...')
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i)
+    }
+
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) pageNumbers.push('...')
+      pageNumbers.push(totalPages)
+    }
+  }
+
+  // Xử lý thay đổi form text input
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setFormData({
       ...formData,
       [name]: value,
-    });
+    })
 
-    // Xóa lỗi khi người dùng sửa
     if (errors[name]) {
       setErrors({
         ...errors,
         [name]: null,
-      });
+      })
+    }
+  }
+
+  // Xử lý thay đổi form file input với loading cho từng field
+  const handleFileChange = async (e) => {
+    const { name, files } = e.target;
+
+    if (files && files[0]) {
+      try {
+        setUploadingFields({
+          ...uploadingFields,
+          [name]: true
+        });
+        
+        let uploadResult;
+        if (name === "video_url") {
+          uploadResult = await uploadVideo(files[0]);
+        } else {
+          uploadResult = await uploadImage(files[0]);
+        }
+
+        if (uploadResult) {
+          setFormData({
+            ...formData,
+            [name]: uploadResult.secure_url,
+          });
+
+          if (name === "thumbnail_url") {
+            setImagePreview(uploadResult.secure_url);
+          } else if (name === "banner_url") {
+            setBannerPreview(uploadResult.secure_url);
+          }
+        }
+      } catch (error) {
+        console.error("Upload error:", error);
+        setErrors({
+          ...errors,
+          [name]: "Lỗi khi tải lên file",
+        });
+      } finally {
+        setUploadingFields({
+          ...uploadingFields,
+          [name]: false
+        });
+      }
     }
   };
 
   // Validate form
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors = {}
 
-    if (!formData.title.trim()) {
-      newErrors.title = "Tên phim không được để trống";
+    if (!formData.name.trim()) {
+      newErrors.name = "Vui lòng nhập tên phim";
     }
 
-    if (!formData.category) {
-      newErrors.category = "Vui lòng chọn danh mục";
+    if (!formData.banner_url) {
+      newErrors.banner_url = "Vui lòng chọn hình ảnh banner";
     }
 
-    if (!formData.director.trim()) {
-      newErrors.director = "Tên đạo diễn không được để trống";
-    }
-
-    if (
-      !formData.year ||
-      formData.year < 1900 ||
-      formData.year > new Date().getFullYear()
-    ) {
-      newErrors.year = `Năm phải từ 1900 đến ${new Date().getFullYear()}`;
-    }
-
-    if (!formData.duration || formData.duration < 1) {
-      newErrors.duration = "Thời lượng phải lớn hơn 0";
+    if (!formData.video_url) {
+      newErrors.video_url = "Vui lòng chọn file video";
     }
 
     setErrors(newErrors);
@@ -180,85 +217,124 @@ const Movies = () => {
   };
 
   // Xử lý thêm phim mới
-  const handleAddMovie = () => {
-    if (!validateForm()) return;
+  const handleAddMovie = async () => {
+    if (!validateForm()) return
 
-    const newMovie = {
-      ...formData,
-      id: movies.length + 1,
-      poster: "https://via.placeholder.com/40x60",
-    };
-
-    setMovies([...movies, newMovie]);
-    setShowAddModal(false);
-    resetForm();
-  };
+    try {
+      setIsProcessing(true)
+      setProcessingText("Đang thêm phim mới...")
+      
+      await dispatch(createVideo(formData)).unwrap()
+      await dispatch(fetchVideos({ page, perPage, searchTerm: debouncedSearchTerm }))
+      
+      setShowAddModal(false)
+      resetForm()
+      toast.success("Thêm phim mới thành công!")
+    } catch (error) {
+      console.error("Error adding movie:", error)
+      // toast.error("Lỗi khi thêm phim mới!")
+    } finally {
+      setIsProcessing(false)
+    }
+  }
 
   // Xử lý cập nhật phim
-  const handleUpdateMovie = () => {
-    if (!validateForm()) return;
+  const handleUpdateMovie = async () => {
+    if (!validateForm()) return
 
-    const updatedMovies = movies.map((movie) =>
-      movie.id === currentMovie.id ? { ...movie, ...formData } : movie
-    );
+    try {
+      setShowEditModal(false)
 
-    setMovies(updatedMovies);
-    setShowEditModal(false);
-    resetForm();
-  };
+      setIsProcessing(true)
+      setProcessingText("Đang cập nhật phim...")
+      
+      await dispatch(updateVideo({ id: currentMovie._id, videoData: formData })).unwrap()
+      await dispatch(fetchVideos({ page, perPage, searchTerm: debouncedSearchTerm }))
+      
+      toast.success("Cập nhật phim thành công!")
+    } catch (error) {
+      resetForm()
+      console.error("Error updating movie:", error)
+      // toast.error("Lỗi khi cập nhật phim!")
+    } finally {
+      setIsProcessing(false)
+    }
+  }
 
   // Xử lý xóa phim
-  const handleDeleteMovie = () => {
-    const updatedMovies = movies.filter(
-      (movie) => movie.id !== currentMovie.id
-    );
-    setMovies(updatedMovies);
-    setShowDeleteModal(false);
-  };
+  const handleDeleteMovie = async () => {
+    try {
+      setShowDeleteModal(false)
+
+      setIsProcessing(true)
+      setProcessingText("Đang xóa phim...")
+      
+      await dispatch(deleteVideo(currentMovie._id)).unwrap()
+      await dispatch(fetchVideos({ page, perPage, searchTerm: debouncedSearchTerm }))
+      
+      toast.success("Xóa phim thành công!")
+    } catch (error) {
+      console.error("Error deleting movie:", error)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
 
   // Reset form
   const resetForm = () => {
     setFormData({
-      title: "",
-      category: "",
-      director: "",
-      year: new Date().getFullYear(),
-      duration: 90,
+      category_id: "",
+      name: "",
+      thumbnail_url: "",
+      video_url: "",
+      banner_url: "",
       description: "",
-      status: "draft",
-    });
-    setErrors({});
-  };
+    })
+    setImagePreview(null)
+    setBannerPreview(null)
+    setErrors({})
+  }
 
   // Mở modal chỉnh sửa
   const openEditModal = (movie) => {
-    setCurrentMovie(movie);
+    setCurrentMovie(movie)
     setFormData({
-      title: movie.title,
-      category: movie.category,
-      director: movie.director,
-      year: movie.year,
-      duration: movie.duration,
-      description: movie.description || "",
-      status: movie.status,
-    });
-    setShowEditModal(true);
-  };
+      category_id: movie.category_id,
+      name: movie.name,
+      thumbnail_url: movie.thumbnail_url,
+      video_url: movie.video_url,
+      banner_url: movie.banner_url,
+      description: movie.description,
+    })
+    setImagePreview(movie.thumbnail_url)
+    setBannerPreview(movie.banner_url)
+    setShowEditModal(true)
+  }
 
   // Mở modal xem chi tiết
   const openViewModal = (movie) => {
-    setCurrentMovie(movie);
-    setShowViewModal(true);
-  };
+    setCurrentMovie(movie)
+    setShowViewModal(true)
+  }
 
   // Mở modal xóa
   const openDeleteModal = (movie) => {
-    setCurrentMovie(movie);
-    setShowDeleteModal(true);
-  };
+    setCurrentMovie(movie)
+    setShowDeleteModal(true)
+  }
+
+  if (loading && !videos?.length) {
+    return <Loading fullScreen text="Đang tải dữ liệu phim..." />
+  }
 
   return (
     <div className="movies-page">
+      {/* Thêm Toaster để hiển thị thông báo */}
+      <Toaster position="top-right" reverseOrder={false} />
+
+      {/* Hiển thị loading overlay khi đang xử lý */}
+      {isProcessing && <Loading fullScreen text={processingText} />}
+      
       <div className="movies-header">
         <div className="movies-title">
           <h1>Quản lý phim</h1>
@@ -272,36 +348,13 @@ const Movies = () => {
       <div className="filters-bar">
         <div className="search-box">
           <span className="search-icon">🔍</span>
-          <input
-            type="text"
-            placeholder="Tìm kiếm phim..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+          <input 
+            type="text" 
+            placeholder="Tìm kiếm phim..." 
+            value={searchTerm} 
+            onChange={handleSearch} 
           />
         </div>
-
-        <select
-          className="filter-select"
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-        >
-          <option value="all">Tất cả danh mục</option>
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
-
-        <select
-          className="filter-select"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="all">Tất cả trạng thái</option>
-          <option value="published">Đã xuất bản</option>
-          <option value="draft">Bản nháp</option>
-        </select>
       </div>
 
       <div className="movies-table-container">
@@ -309,90 +362,108 @@ const Movies = () => {
           <thead>
             <tr>
               <th>ID</th>
+              <th>Hình ảnh</th>
               <th>Tên phim</th>
               <th>Danh mục</th>
-              <th>Đạo diễn</th>
-              <th>Năm</th>
-              <th>Thời lượng</th>
-              <th>Trạng thái</th>
               <th>Thao tác</th>
             </tr>
           </thead>
           <tbody>
-            {filteredMovies.map((movie) => (
-              <tr key={movie.id}>
-                <td>{movie.id}</td>
-                <td>
-                  <div className="movie-title-cell">
-                    <img
-                      src={movie.poster || "/placeholder.svg"}
-                      alt={movie.title}
-                      className="movie-poster"
-                    />
-                    <span className="movie-title">{movie.title}</span>
-                  </div>
-                </td>
-                <td>{movie.category}</td>
-                <td>{movie.director}</td>
-                <td>{movie.year}</td>
-                <td>{movie.duration} phút</td>
-                <td>
-                  <span className={`movie-status status-${movie.status}`}>
-                    {movie.status === "published" ? "Đã xuất bản" : "Bản nháp"}
-                  </span>
-                </td>
-                <td>
-                  <div className="actions-cell">
-                    <button
-                      className="action-btn view-btn"
-                      title="Xem chi tiết"
-                      onClick={() => openViewModal(movie)}
-                    >
-                      👁️
-                    </button>
-                    <button
-                      className="action-btn edit-btn"
-                      title="Chỉnh sửa"
-                      onClick={() => openEditModal(movie)}
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      className="action-btn delete-btn"
-                      title="Xóa"
-                      onClick={() => openDeleteModal(movie)}
-                    >
-                      🗑️
-                    </button>
-                  </div>
+            {videos?.length > 0 ? (
+              videos.map((movie) => (
+                <tr key={movie._id}>
+                  <td>{movie._id}</td>
+                  <td>
+                    <img src={movie.thumbnail_url || "/placeholder.svg"} alt={movie.name} className="movie-poster" />
+                  </td>
+                  <td className="movie-title">{movie.name}</td>
+                  <td>{categories?.find(cat => cat._id === movie.category_id)?.name || "N/A"}</td>
+                  <td>
+                    <div className="actions-cell">
+                      <button className="action-btn view-btn" title="Xem chi tiết" onClick={() => openViewModal(movie)}>
+                        👁️
+                      </button>
+                      <button className="action-btn edit-btn" title="Chỉnh sửa" onClick={() => openEditModal(movie)}>
+                        ✏️
+                      </button>
+                      <button className="action-btn delete-btn" title="Xóa" onClick={() => openDeleteModal(movie)}>
+                        🗑️
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="no-data">
+                  {debouncedSearchTerm 
+                    ? "Không tìm thấy phim nào phù hợp" 
+                    : "Chưa có phim nào trong hệ thống"}
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
-
-        <div className="pagination">
-          <button className="pagination-btn" disabled>
-            &laquo;
-          </button>
-          <button className="pagination-btn active">1</button>
-          <button className="pagination-btn">2</button>
-          <button className="pagination-btn">3</button>
-          <button className="pagination-btn">&raquo;</button>
-        </div>
       </div>
+
+      {/* Phân trang */}
+      {totalVideos > 0 && (
+        <div className="pagination">
+          <button 
+            className="pagination-btn"
+            disabled={page === 1} 
+            onClick={() => handlePageChange(page - 1)}
+          >
+            « Trước
+          </button>
+          
+          {pageNumbers.map((pageNum, index) => (
+            pageNum === '...' ? (
+              <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
+            ) : (
+              <button
+                key={pageNum}
+                className={`pagination-btn ${page === pageNum ? 'active' : ''}`}
+                onClick={() => handlePageChange(pageNum)}
+              >
+                {pageNum}
+              </button>
+            )
+          ))}
+          
+          <button 
+            className="pagination-btn"
+            disabled={page === totalPages} 
+            onClick={() => handlePageChange(page + 1)}
+          >
+            Sau »
+          </button>
+          
+          <div className="pagination-info">
+            Trang {page}/{totalPages}, Tổng số: {totalVideos} phim
+          </div>
+        </div>
+      )}
 
       {/* Modal thêm phim mới */}
       <MovieModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => !isProcessing && !Object.values(uploadingFields).some(Boolean) && setShowAddModal(false)}
         title="Thêm phim mới"
         footer={
           <>
-            <button className="btn btn-secondary" onClick={() => setShowAddModal(false)}>
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => setShowAddModal(false)}
+              disabled={isProcessing || Object.values(uploadingFields).some(Boolean)}
+            >
               Hủy
             </button>
-            <button className="btn btn-primary" onClick={handleAddMovie}>
+            <button 
+              className="btn btn-primary" 
+              onClick={handleAddMovie} 
+              disabled={isProcessing || Object.values(uploadingFields).some(Boolean)}
+            >
               Thêm mới
             </button>
           </>
@@ -400,80 +471,8 @@ const Movies = () => {
       >
         <div className="form-group">
           <label className="form-label">Tên phim</label>
-          <input
-            type="text"
-            name="title"
-            className="form-control"
-            value={formData.title}
-            onChange={handleChange}
-          />
-          {errors.title && <div className="error-message">{errors.title}</div>}
-        </div>
-
-        <div className="form-row">
-          <div className="form-col">
-            <div className="form-group">
-              <label className="form-label">Danh mục</label>
-              <select
-                name="category"
-                className="form-select"
-                value={formData.category}
-                onChange={handleChange}
-              >
-                <option value="">Chọn danh mục</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-              {errors.category && <div className="error-message">{errors.category}</div>}
-            </div>
-          </div>
-
-          <div className="form-col">
-            <div className="form-group">
-              <label className="form-label">Đạo diễn</label>
-              <input
-                type="text"
-                name="director"
-                className="form-control"
-                value={formData.director}
-                onChange={handleChange}
-              />
-              {errors.director && <div className="error-message">{errors.director}</div>}
-            </div>
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-col">
-            <div className="form-group">
-              <label className="form-label">Năm sản xuất</label>
-              <input
-                type="number"
-                name="year"
-                className="form-control"
-                value={formData.year}
-                onChange={handleChange}
-              />
-              {errors.year && <div className="error-message">{errors.year}</div>}
-            </div>
-          </div>
-
-          <div className="form-col">
-            <div className="form-group">
-              <label className="form-label">Thời lượng (phút)</label>
-              <input
-                type="number"
-                name="duration"
-                className="form-control"
-                value={formData.duration}
-                onChange={handleChange}
-              />
-              {errors.duration && <div className="error-message">{errors.duration}</div>}
-            </div>
-          </div>
+          <input type="text" name="name" className="form-control" value={formData.name} onChange={handleChange} />
+          {errors.name && <div className="error-message">{errors.name}</div>}
         </div>
 
         <div className="form-group">
@@ -484,19 +483,85 @@ const Movies = () => {
             value={formData.description}
             onChange={handleChange}
           ></textarea>
+          {errors.description && <div className="error-message">{errors.description}</div>}
         </div>
 
         <div className="form-group">
-          <label className="form-label">Trạng thái</label>
-          <select
-            name="status"
-            className="form-select"
-            value={formData.status}
-            onChange={handleChange}
-          >
-            <option value="draft">Bản nháp</option>
-            <option value="published">Đã xuất bản</option>
+          <label className="form-label">Danh mục</label>
+          <select name="category_id" className="form-select" value={formData.category_id} onChange={handleChange}>
+            <option value="">Chọn danh mục</option>
+            {categories?.map((category) => (
+              <option key={category._id} value={category._id}>
+                {category.name}
+              </option>
+            ))}
           </select>
+          {errors.category_id && <div className="error-message">{errors.category_id}</div>}
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Hình ảnh</label>
+          <div className="file-input-container">
+            <input
+              type="file"
+              name="thumbnail_url"
+              className="form-file-input"
+              accept="image/*"
+              onChange={handleFileChange}
+              disabled={uploadingFields.thumbnail_url}
+            />
+            {uploadingFields.thumbnail_url && (
+              <FileUploadLoading text="Đang tải hình ảnh lên..." />
+            )}
+            {imagePreview && (
+              <div className="image-preview">
+                <img src={imagePreview} alt="Preview" />
+              </div>
+            )}
+          </div>
+          {errors.thumbnail_url && <div className="error-message">{errors.thumbnail_url}</div>}
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Hình ảnh banner</label>
+          <div className="file-input-container">
+            <input
+              type="file"
+              name="banner_url"
+              className="form-file-input"
+              accept="image/*"
+              onChange={handleFileChange}
+              disabled={uploadingFields.banner_url}
+            />
+            {uploadingFields.banner_url && (
+              <FileUploadLoading text="Đang tải banner lên..." />
+            )}
+            {bannerPreview && (
+              <div className="banner-preview">
+                <img src={bannerPreview} alt="Banner Preview" />
+              </div>
+            )}
+          </div>
+          {errors.banner_url && <div className="error-message">{errors.banner_url}</div>}
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Video</label>
+          <div className="file-input-container">
+            <input
+              type="file"
+              name="video_url"
+              className="form-file-input"
+              accept="video/*"
+              onChange={handleFileChange}
+              disabled={uploadingFields.video_url}
+            />
+            {uploadingFields.video_url && (
+              <FileUploadLoading text="Đang tải video lên..." />
+            )}
+            {formData.video_url && <div className="file-name">Video đã được tải lên</div>}
+          </div>
+          {errors.video_url && <div className="error-message">{errors.video_url}</div>}
         </div>
       </MovieModal>
 
@@ -513,8 +578,8 @@ const Movies = () => {
             <button
               className="btn btn-primary"
               onClick={() => {
-                setShowViewModal(false);
-                openEditModal(currentMovie);
+                setShowViewModal(false)
+                openEditModal(currentMovie)
               }}
             >
               Chỉnh sửa
@@ -524,43 +589,42 @@ const Movies = () => {
       >
         {currentMovie && (
           <div className="movie-detail">
+            <div className="movie-detail-banner">
+              <img
+                src={currentMovie.banner_url || "/placeholder.svg"}
+                alt={`Banner của ${currentMovie.name}`}
+                className="movie-banner-image"
+              />
+            </div>
+
             <div className="movie-detail-header">
               <img
-                src={currentMovie.poster || "/placeholder.svg"}
-                alt={currentMovie.title}
+                src={currentMovie.thumbnail_url || "/placeholder.svg"}
+                alt={currentMovie.name}
                 className="movie-detail-poster"
-                style={{
-                  width: "100px",
-                  height: "150px",
-                  objectFit: "cover",
-                  marginRight: "20px",
-                }}
               />
-              <div>
-                <h2 style={{ margin: "0 0 10px 0" }}>{currentMovie.title}</h2>
-                <p style={{ margin: "0 0 5px 0" }}>
-                  <strong>Danh mục:</strong> {currentMovie.category}
-                </p>
-                <p style={{ margin: "0 0 5px 0" }}>
-                  <strong>Đạo diễn:</strong> {currentMovie.director}
-                </p>
-                <p style={{ margin: "0 0 5px 0" }}>
-                  <strong>Năm sản xuất:</strong> {currentMovie.year}
-                </p>
-                <p style={{ margin: "0 0 5px 0" }}>
-                  <strong>Thời lượng:</strong> {currentMovie.duration} phút
-                </p>
-                <p style={{ margin: "0 0 5px 0" }}>
-                  <strong>Trạng thái:</strong>{" "}
-                  <span className={`movie-status status-${currentMovie.status}`}>
-                    {currentMovie.status === "published" ? "Đã xuất bản" : "Bản nháp"}
-                  </span>
+              <div className="movie-detail-info">
+                <h2>{currentMovie.name}</h2>
+                <p>
+                  <strong>Danh mục:</strong>{" "}
+                  {categories?.find((cat) => cat._id === currentMovie.category_id)?.name || "N/A"}
                 </p>
               </div>
             </div>
-            <div style={{ marginTop: "20px" }}>
-              <h4 style={{ marginBottom: "10px" }}>Mô tả</h4>
+
+            <div className="movie-description">
+              <h4>Mô tả</h4>
               <p>{currentMovie.description || "Không có mô tả."}</p>
+            </div>
+
+            <div className="movie-video">
+              <h4>Video</h4>
+              <div className="video-container">
+                <video controls width="100%">
+                  <source src={currentMovie.video_url} type="video/mp4" />
+                  Trình duyệt của bạn không hỗ trợ video.
+                </video>
+              </div>
             </div>
           </div>
         )}
@@ -569,14 +633,22 @@ const Movies = () => {
       {/* Modal chỉnh sửa phim */}
       <MovieModal
         isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
+        onClose={() => !isProcessing && !Object.values(uploadingFields).some(Boolean) && setShowEditModal(false)}
         title="Chỉnh sửa phim"
         footer={
           <>
-            <button className="btn btn-secondary" onClick={() => setShowEditModal(false)}>
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => setShowEditModal(false)}
+              disabled={isProcessing || Object.values(uploadingFields).some(Boolean)}
+            >
               Hủy
             </button>
-            <button className="btn btn-primary" onClick={handleUpdateMovie}>
+            <button 
+              className="btn btn-primary" 
+              onClick={handleUpdateMovie} 
+              disabled={isProcessing || Object.values(uploadingFields).some(Boolean)}
+            >
               Cập nhật
             </button>
           </>
@@ -584,80 +656,8 @@ const Movies = () => {
       >
         <div className="form-group">
           <label className="form-label">Tên phim</label>
-          <input
-            type="text"
-            name="title"
-            className="form-control"
-            value={formData.title}
-            onChange={handleChange}
-          />
-          {errors.title && <div className="error-message">{errors.title}</div>}
-        </div>
-
-        <div className="form-row">
-          <div className="form-col">
-            <div className="form-group">
-              <label className="form-label">Danh mục</label>
-              <select
-                name="category"
-                className="form-select"
-                value={formData.category}
-                onChange={handleChange}
-              >
-                <option value="">Chọn danh mục</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-              {errors.category && <div className="error-message">{errors.category}</div>}
-            </div>
-          </div>
-
-          <div className="form-col">
-            <div className="form-group">
-              <label className="form-label">Đạo diễn</label>
-              <input
-                type="text"
-                name="director"
-                className="form-control"
-                value={formData.director}
-                onChange={handleChange}
-              />
-              {errors.director && <div className="error-message">{errors.director}</div>}
-            </div>
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-col">
-            <div className="form-group">
-              <label className="form-label">Năm sản xuất</label>
-              <input
-                type="number"
-                name="year"
-                className="form-control"
-                value={formData.year}
-                onChange={handleChange}
-              />
-              {errors.year && <div className="error-message">{errors.year}</div>}
-            </div>
-          </div>
-
-          <div className="form-col">
-            <div className="form-group">
-              <label className="form-label">Thời lượng (phút)</label>
-              <input
-                type="number"
-                name="duration"
-                className="form-control"
-                value={formData.duration}
-                onChange={handleChange}
-              />
-              {errors.duration && <div className="error-message">{errors.duration}</div>}
-            </div>
-          </div>
+          <input type="text" name="name" className="form-control" value={formData.name} onChange={handleChange} />
+          {errors.name && <div className="error-message">{errors.name}</div>}
         </div>
 
         <div className="form-group">
@@ -668,44 +668,116 @@ const Movies = () => {
             value={formData.description}
             onChange={handleChange}
           ></textarea>
+          {errors.description && <div className="error-message">{errors.description}</div>}
         </div>
 
         <div className="form-group">
-          <label className="form-label">Trạng thái</label>
-          <select
-            name="status"
-            className="form-select"
-            value={formData.status}
-            onChange={handleChange}
-          >
-            <option value="draft">Bản nháp</option>
-            <option value="published">Đã xuất bản</option>
+          <label className="form-label">Danh mục</label>
+          <select name="category_id" className="form-select" value={formData.category_id} onChange={handleChange}>
+            <option value="">Chọn danh mục</option>
+            {categories?.map((category) => (
+              <option key={category._id} value={category._id}>
+                {category.name}
+              </option>
+            ))}
           </select>
+          {errors.category_id && <div className="error-message">{errors.category_id}</div>}
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Hình ảnh</label>
+          <div className="file-input-container">
+            <input
+              type="file"
+              name="thumbnail_url"
+              className="form-file-input"
+              accept="image/*"
+              onChange={handleFileChange}
+              disabled={uploadingFields.thumbnail_url}
+            />
+            {uploadingFields.thumbnail_url && (
+              <FileUploadLoading text="Đang tải hình ảnh lên..." />
+            )}
+            {imagePreview && (
+              <div className="image-preview">
+                <img src={imagePreview} alt="Preview" />
+              </div>
+            )}
+          </div>
+          {errors.thumbnail_url && <div className="error-message">{errors.thumbnail_url}</div>}
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Hình ảnh banner</label>
+          <div className="file-input-container">
+            <input
+              type="file"
+              name="banner_url"
+              className="form-file-input"
+              accept="image/*"
+              onChange={handleFileChange}
+              disabled={uploadingFields.banner_url}
+            />
+            {uploadingFields.banner_url && (
+              <FileUploadLoading text="Đang tải banner lên..." />
+            )}
+            {bannerPreview && (
+              <div className="banner-preview">
+                <img src={bannerPreview} alt="Banner Preview" />
+              </div>
+            )}
+          </div>
+          {errors.banner_url && <div className="error-message">{errors.banner_url}</div>}
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Video</label>
+          <div className="file-input-container">
+            <input
+              type="file"
+              name="video_url"
+              className="form-file-input"
+              accept="video/*"
+              onChange={handleFileChange}
+              disabled={uploadingFields.video_url}
+            />
+            {uploadingFields.video_url && (
+              <FileUploadLoading text="Đang tải video lên..." />
+            )}
+            {formData.video_url && <div className="file-name">Video đã được tải lên</div>}
+          </div>
+          {errors.video_url && <div className="error-message">{errors.video_url}</div>}
         </div>
       </MovieModal>
 
       {/* Modal xác nhận xóa phim */}
       <MovieModal
         isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
+        onClose={() => !isProcessing && setShowDeleteModal(false)}
         title="Xác nhận xóa"
         footer={
           <>
-            <button className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => setShowDeleteModal(false)}
+              disabled={isProcessing}
+            >
               Hủy
             </button>
-            <button className="btn btn-danger" onClick={handleDeleteMovie}>
+            <button 
+              className="btn btn-danger" 
+              onClick={handleDeleteMovie}
+              disabled={isProcessing}
+            >
               Xóa
             </button>
           </>
         }
       >
-        <p>
-          Bạn có chắc chắn muốn xóa phim "{currentMovie?.title}"? Hành động này không thể hoàn tác.
-        </p>
+        <p>Bạn có chắc chắn muốn xóa phim "{currentMovie?.name}"? Hành động này không thể hoàn tác.</p>
       </MovieModal>
     </div>
-  );
-};
+  )
+}
 
-export default Movies;
+export default Movies

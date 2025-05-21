@@ -1,8 +1,6 @@
-"use client"
-
 import { useState, useEffect } from "react"
-// import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import "./Dashboard.css"
+import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_PRESENT_NAME } from "../../../utils/cloudinary-config"
 
 const Dashboard = () => {
   const [activityData, setActivityData] = useState([])
@@ -28,6 +26,9 @@ const Dashboard = () => {
 
     setActivityData(generateData())
   }, [])
+
+  console.log(CLOUDINARY_CLOUD_NAME, CLOUDINARY_PRESENT_NAME);
+  
 
   // Dữ liệu mẫu cho phim gần đây
   const recentMovies = [

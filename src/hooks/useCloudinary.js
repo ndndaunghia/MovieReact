@@ -4,7 +4,7 @@ export const useCloudinary = (config) => {
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState(null);
 
-    const uploadImage = async (file) => {
+    const uploadFile = async (file, resourceType = 'image') => {
         try {
             setIsUploading(true);
             setError(null);
@@ -14,7 +14,7 @@ export const useCloudinary = (config) => {
             formData.append('upload_preset', config.uploadPreset);
 
             const response = await fetch(
-                `https://api.cloudinary.com/v1_1/${config.cloudName}/image/upload`,
+                `https://api.cloudinary.com/v1_1/${config.cloudName}/${resourceType}/upload`,
                 {
                     method: 'POST',
                     body: formData,
@@ -26,7 +26,7 @@ export const useCloudinary = (config) => {
             }
 
             const data = await response.json();
-            return data.secure_url;
+            return data;
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Upload failed');
             throw err;
@@ -35,5 +35,8 @@ export const useCloudinary = (config) => {
         }
     };
 
-    return { uploadImage, isUploading, error };
-}
+    const uploadImage = (file) => uploadFile(file, 'image');
+    const uploadVideo = (file) => uploadFile(file, 'video');
+
+    return { uploadImage, uploadVideo, isUploading, error };
+};
