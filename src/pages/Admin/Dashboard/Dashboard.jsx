@@ -27,10 +27,6 @@ const Dashboard = () => {
     setActivityData(generateData())
   }, [])
 
-  console.log(CLOUDINARY_CLOUD_NAME, CLOUDINARY_PRESENT_NAME);
-  
-
-  // Dữ liệu mẫu cho phim gần đây
   const recentMovies = [
     {
       id: 1,

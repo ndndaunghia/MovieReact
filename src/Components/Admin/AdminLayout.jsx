@@ -13,7 +13,7 @@ const AdminLayout = () => {
     { path: "/admin/dashboard", label: "Trang chủ", icon: "📊" },
     { path: "/admin/movies", label: "Danh sách phim", icon: "🎬" },
     { path: "/admin/users", label: "Danh sách người dùng", icon: "👥" },
-    { path: "/admin/categories", label: "Danh mục phim", icon: "📑" },
+    { path: "/admin/categories", label: "Thể loại phim", icon: "📑" },
   ]
 
   const handleLogout = () => {

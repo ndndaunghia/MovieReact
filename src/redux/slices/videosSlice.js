@@ -4,14 +4,14 @@ import axiosInstance from "../../api/axiosInstance";
 
 export const fetchVideos = createAsyncThunk(
   "videos/fetchVideos",
-  async ({ page = 1, perPage = 10, searchTerm = "" }, {getState, rejectWithValue }) => {
+  async ({ page = 1, perPage = 10, q = "" }, {getState, rejectWithValue }) => {
     try {
       const { auth } = getState();
       const response = await axiosInstance.get(API_ENDPOINTS.VIDEOS.GET_ALL, {
         params: {
           page,
           per_page: perPage,
-          search: searchTerm,
+          q: q,
         },
         headers: {
           Authorization: `Bearer ${auth.token}`,

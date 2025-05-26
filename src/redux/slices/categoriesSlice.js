@@ -5,15 +5,20 @@ import axiosInstance from '../../api/axiosInstance';
 // Async thunks
 export const fetchCategories = createAsyncThunk(
   'categories/fetchCategories',
-  async (_, { getState, rejectWithValue }) => {
+  async ({ page = 1, perPage = 10, q = "" }, { getState, rejectWithValue }) => {
     try {
       const { auth } = getState();
       const response = await axiosInstance.get(API_ENDPOINTS.CATEGORIES.GET_ALL, {
+        params: {
+          page,
+          per_page: perPage,
+          q: q,
+        },
         headers: {
           Authorization: `Bearer ${auth.token}`,
         },
       });
-      return response.data;
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
@@ -93,6 +98,9 @@ const initialState = {
   currentCategory: null,
   loading: false,
   error: null,
+  totalCategories: 0,
+  currentPage: 1,
+  perPage: 10,
 };
 
 const categoriesSlice = createSlice({
@@ -115,7 +123,10 @@ const categoriesSlice = createSlice({
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.loading = false;
-        state.categories = action.payload.data.categories;
+        state.categories = action.payload.categories;
+        state.totalCategories = action.payload.total;
+        state.currentPage = action.payload.page;
+        state.perPage = action.payload.per_page;
       })
       .addCase(fetchCategories.rejected, (state, action) => {
         state.loading = false;

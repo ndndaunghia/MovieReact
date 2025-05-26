@@ -1,32 +1,91 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import {
   fetchCategories,
   createCategory,
   updateCategory,
   deleteCategory,
   clearError,
-} from '../../../redux/slices/categoriesSlice';
-import './Categories.css';
-import toast, { Toaster } from "react-hot-toast"
-import Loading from '../../../Components/common/Loading/Loading';
+} from "../../../redux/slices/categoriesSlice";
+import "./Categories.css";
+import toast, { Toaster } from "react-hot-toast";
+import Loading from "../../../Components/common/Loading/Loading";
 
 const Categories = () => {
   const dispatch = useDispatch();
-  const { categories, loading, error } = useSelector((state) => state.categories);
-  console.log(categories);
-  
+  const { categories, loading, error, totalCategories, currentPage, perPage } =
+    useSelector((state) => state.categories);
+
   const [modalType, setModalType] = useState(null); // 'add', 'edit', 'view'
   const [editingCategory, setEditingCategory] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
   });
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+
   useEffect(() => {
-    dispatch(fetchCategories());
-  }, [dispatch]);
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setPage(1);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
+
+  const totalPages = Math.ceil(totalCategories / perPage);
+  const pageNumbers = [];
+  const maxPageButtons = 5;
+
+  if (totalPages <= maxPageButtons) {
+    for (let i = 1; i <= totalPages; i++) {
+      pageNumbers.push(i);
+    }
+  } else {
+    let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+    let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+
+    if (endPage - startPage + 1 < maxPageButtons) {
+      startPage = Math.max(1, endPage - maxPageButtons + 1);
+    }
+
+    if (startPage > 1) {
+      pageNumbers.push(1);
+      if (startPage > 2) pageNumbers.push("...");
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) pageNumbers.push("...");
+      pageNumbers.push(totalPages);
+    }
+  }
+
+  useEffect(() => {
+    dispatch(
+      fetchCategories({
+        page,
+        perPage,
+        q: debouncedSearchTerm,
+      })
+    );
+  }, [dispatch, page, perPage, debouncedSearchTerm]);
+
 
   useEffect(() => {
     if (error) {
@@ -46,8 +105,8 @@ const Categories = () => {
     } else {
       setEditingCategory(null);
       setFormData({
-        name: '',
-        description: '',
+        name: "",
+        description: "",
       });
     }
   };
@@ -56,8 +115,8 @@ const Categories = () => {
     setModalType(null);
     setEditingCategory(null);
     setFormData({
-      name: '',
-      description: '',
+      name: "",
+      description: "",
     });
     dispatch(clearError());
   };
@@ -74,28 +133,31 @@ const Categories = () => {
     e.preventDefault();
     try {
       if (editingCategory) {
-        await dispatch(updateCategory({ id: editingCategory._id, categoryData: formData })).unwrap();
-        toast.success('Cập nhật danh mục thành công!');
+        await dispatch(
+          updateCategory({ id: editingCategory._id, categoryData: formData })
+        ).unwrap();
+        
+        toast.success("Cập nhật danh mục thành công!");
       } else {
         await dispatch(createCategory(formData)).unwrap();
-        toast.success('Thêm danh mục thành công!');
+        toast.success("Thêm danh mục thành công!");
       }
-      await dispatch(fetchCategories()).unwrap();
+      await dispatch(fetchCategories({ page, perPage, searchTerm: debouncedSearchTerm }));
       handleCloseModal();
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
       // toast.error('Có lỗi xảy ra, vui lòng thử lại!');
     }
   };
-  
+
   const handleDelete = async (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa danh mục này?')) {
+    if (window.confirm("Bạn có chắc chắn muốn xóa danh mục này?")) {
       try {
         await dispatch(deleteCategory(id)).unwrap();
-        toast.success('Xóa danh mục thành công!');
-        await dispatch(fetchCategories()).unwrap();
+        toast.success("Xóa danh mục thành công!");
+        await dispatch(fetchCategories({ page, perPage, searchTerm: debouncedSearchTerm }));
       } catch (error) {
-        console.error('Error:', error);
+        console.error("Error:", error);
         // toast.error('Có lỗi xảy ra, vui lòng thử lại!');
       }
     }
@@ -103,7 +165,7 @@ const Categories = () => {
 
   const renderModalContent = () => {
     switch (modalType) {
-      case 'add':
+      case "add":
         return (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -129,17 +191,25 @@ const Categories = () => {
             </div>
             {error && <div className="error-message">{error.detail?.name}</div>}
             <div className="modal__actions">
-              <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleCloseModal}
+              >
                 Hủy
               </button>
-              <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? 'Đang xử lý...' : 'Thêm mới'}
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={loading}
+              >
+                {loading ? "Đang xử lý..." : "Thêm mới"}
               </button>
             </div>
           </form>
         );
 
-      case 'edit':
+      case "edit":
         return (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -165,17 +235,25 @@ const Categories = () => {
             </div>
             {error && <div className="error-message">{error.detail?.name}</div>}
             <div className="modal__actions">
-              <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleCloseModal}
+              >
                 Hủy
               </button>
-              <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? 'Đang xử lý...' : 'Cập nhật'}
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={loading}
+              >
+                {loading ? "Đang xử lý..." : "Cập nhật"}
               </button>
             </div>
           </form>
         );
 
-      case 'view':
+      case "view":
         return (
           <div className="category-detail">
             <div className="form-group">
@@ -187,13 +265,17 @@ const Categories = () => {
               <p>{editingCategory?.description}</p>
             </div>
             <div className="modal__actions">
-              <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleCloseModal}
+              >
                 Đóng
               </button>
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={() => handleOpenModal('edit', editingCategory)}
+                onClick={() => handleOpenModal("edit", editingCategory)}
               >
                 Chỉnh sửa
               </button>
@@ -209,16 +291,21 @@ const Categories = () => {
   if (loading && !categories?.data?.categories?.length) {
     return <Loading fullScreen text="Đang tải dữ liệu danh mục phim..." />;
   }
+  console.log();
+  
 
   return (
     <div className="categories">
       <Toaster position="top-right" reverseOrder={false} />
       <div className="categories__header">
         <div className="categories-title">
-          <h1>Quản lý danh mục phim</h1>
+          <h1>Thể loại phim</h1>
           <p>Quản lý danh sách danh mục phim trong hệ thống</p>
         </div>
-        <button className="btn btn-primary" onClick={() => handleOpenModal('add')}>
+        <button
+          className="btn btn-primary"
+          onClick={() => handleOpenModal("add")}
+        >
           + <span>Thêm danh mục</span>
         </button>
       </div>
@@ -226,7 +313,12 @@ const Categories = () => {
       <div className="filters-bar">
         <div className="search-box">
           <span className="search-icon">🔍</span>
-          <input type="text" placeholder="Tìm kiếm phim..." />
+          <input
+            type="text"
+            placeholder="Tìm kiếm thể loại..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
         </div>
       </div>
 
@@ -241,7 +333,7 @@ const Categories = () => {
             </tr>
           </thead>
           <tbody>
-            {categories?.map((category) => (
+            {/* {categories?.map((category) => (
               <tr key={category._id}>
                 <td>{category._id}</td>
                 <td>{category.name}</td>
@@ -272,20 +364,102 @@ const Categories = () => {
                   </div>
                 </td>
               </tr>
-            ))}
+            ))} */}
+            {categories?.length > 0 ? (
+              categories.map((category) => (
+                <tr key={category._id}>
+                  <td>{category._id}</td>
+                  <td>{category.name}</td>
+                  <td>{category.description}</td>
+                  <td>
+                    <div className="actions-cell">
+                      <button
+                        className="action-btn view-btn"
+                        title="Xem chi tiết"
+                        onClick={() => handleOpenModal("view", category)}
+                      >
+                        👁️
+                      </button>
+                      <button
+                        className="action-btn edit-btn"
+                        title="Chỉnh sửa"
+                        onClick={() => handleOpenModal("edit", category)}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="action-btn delete-btn"
+                        title="Xóa"
+                        onClick={() => handleDelete(category._id)}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="no-data">
+                  {debouncedSearchTerm
+                    ? "Không tìm thấy thể loại nào phù hợp"
+                    : "Chưa có thể loại nào trong hệ thống"}
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
+
+      {totalCategories > 0 && (
+        <div className="pagination">
+          <button
+            className="pagination-btn"
+            disabled={page === 1}
+            onClick={() => handlePageChange(page - 1)}
+          >
+            « Trước
+          </button>
+
+          {pageNumbers.map((pageNum, index) =>
+            pageNum === "..." ? (
+              <span key={`ellipsis-${index}`} className="pagination-ellipsis">
+                ...
+              </span>
+            ) : (
+              <button
+                key={pageNum}
+                className={`pagination-btn ${page === pageNum ? "active" : ""}`}
+                onClick={() => handlePageChange(pageNum)}
+              >
+                {pageNum}
+              </button>
+            )
+          )}
+
+          <button
+            className="pagination-btn"
+            disabled={page === totalPages}
+            onClick={() => handlePageChange(page + 1)}
+          >
+            Sau »
+          </button>
+
+          <div className="pagination-info">
+            Trang {page}/{totalPages}, Tổng số: {totalCategories} thể loại
+          </div>
+        </div>
+      )}
 
       {modalType && (
         <div className="modal" onClick={handleCloseModal}>
           <div className="modal__content" onClick={(e) => e.stopPropagation()}>
             <h2>
-              {modalType === 'add'
-                ? 'Thêm danh mục mới'
-                : modalType === 'edit'
-                ? 'Sửa danh mục'
-                : 'Chi tiết danh mục'}
+              {modalType === "add"
+                ? "Thêm danh mục mới"
+                : modalType === "edit"
+                ? "Sửa danh mục"
+                : "Chi tiết danh mục"}
             </h2>
             {renderModalContent()}
           </div>

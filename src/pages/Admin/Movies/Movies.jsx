@@ -68,7 +68,7 @@ const Movies = () => {
 
   // Fetch videos khi trang, perPage hoặc searchTerm thay đổi
   useEffect(() => {
-    dispatch(fetchVideos({ page, perPage, searchTerm: debouncedSearchTerm }))
+    dispatch(fetchVideos({ page, perPage, q: debouncedSearchTerm }))
   }, [dispatch, page, perPage, debouncedSearchTerm])
 
   useEffect(() => {
@@ -293,10 +293,16 @@ const Movies = () => {
     setImagePreview(null)
     setBannerPreview(null)
     setErrors({})
+    setUploadingFields({
+      thumbnail_url: false,
+      banner_url: false,
+      video_url: false
+    });
   }
 
   // Mở modal chỉnh sửa
   const openEditModal = (movie) => {
+    setErrors({})
     setCurrentMovie(movie)
     setFormData({
       category_id: movie.category_id,
@@ -323,6 +329,31 @@ const Movies = () => {
     setShowDeleteModal(true)
   }
 
+  // Đóng modal thêm mới
+const closeAddModal = () => {
+  if (isProcessing || Object.values(uploadingFields).some(Boolean)) return;
+  setShowAddModal(false);
+  resetForm();
+};
+
+// Đóng modal chỉnh sửa
+const closeEditModal = () => {
+  if (isProcessing || Object.values(uploadingFields).some(Boolean)) return;
+  setShowEditModal(false);
+  resetForm();
+};
+
+// Đóng modal xóa
+const closeDeleteModal = () => {
+  if (isProcessing) return;
+  setShowDeleteModal(false);
+};
+
+// Đóng modal xem chi tiết
+const closeViewModal = () => {
+  setShowViewModal(false);
+};
+
   if (loading && !videos?.length) {
     return <Loading fullScreen text="Đang tải dữ liệu phim..." />
   }
@@ -340,7 +371,10 @@ const Movies = () => {
           <h1>Quản lý phim</h1>
           <p>Quản lý danh sách phim trong hệ thống</p>
         </div>
-        <button className="add-movie-btn" onClick={() => setShowAddModal(true)}>
+        <button className="add-movie-btn" onClick={() => {
+          resetForm()
+          setShowAddModal(true)
+        }}>
           + <span>Thêm phim mới</span>
         </button>
       </div>
@@ -448,7 +482,7 @@ const Movies = () => {
       {/* Modal thêm phim mới */}
       <MovieModal
         isOpen={showAddModal}
-        onClose={() => !isProcessing && !Object.values(uploadingFields).some(Boolean) && setShowAddModal(false)}
+        onClose={closeAddModal}
         title="Thêm phim mới"
         footer={
           <>
@@ -568,7 +602,7 @@ const Movies = () => {
       {/* Modal xem chi tiết phim */}
       <MovieModal
         isOpen={showViewModal}
-        onClose={() => setShowViewModal(false)}
+        onClose={closeViewModal}
         title="Chi tiết phim"
         footer={
           <>
@@ -633,7 +667,7 @@ const Movies = () => {
       {/* Modal chỉnh sửa phim */}
       <MovieModal
         isOpen={showEditModal}
-        onClose={() => !isProcessing && !Object.values(uploadingFields).some(Boolean) && setShowEditModal(false)}
+        onClose={closeEditModal}
         title="Chỉnh sửa phim"
         footer={
           <>
@@ -753,7 +787,7 @@ const Movies = () => {
       {/* Modal xác nhận xóa phim */}
       <MovieModal
         isOpen={showDeleteModal}
-        onClose={() => !isProcessing && setShowDeleteModal(false)}
+        onClose={closeDeleteModal}
         title="Xác nhận xóa"
         footer={
           <>
