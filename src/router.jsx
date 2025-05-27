@@ -19,7 +19,7 @@ import Movies from './pages/Admin/Movies/Movies';
 import ProtectedRoute from './Components/ProtectedRoute/ProtectedRoute';
 import PublicRoute from './Components/PublicRoute/PublicRoute';
 import Categories from './pages/Admin/Categories/Categories';
-
+import Users from './pages/Admin/Users/Users';
 // Admin Routes
 const adminRoutes = {
   path: '/admin',
@@ -29,13 +29,13 @@ const adminRoutes = {
     </ProtectedRoute>
   ),
   children: [
-    {
-      path: 'dashboard',
-      element: <Dashboard />,
-    },
+    // {
+    //   path: 'dashboard',
+    //   element: <Dashboard />,
+    // },
     {
       path: 'users',
-      element: <UserManagement />,
+      element: <Users />,
     },
     {
       path: 'movies',

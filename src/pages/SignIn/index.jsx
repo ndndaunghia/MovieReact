@@ -26,7 +26,7 @@ export default function SignIn() {
       setShowSuccessAlert(true);
       
       if (userData?.data?.type === 1) {
-        navigate('/admin/dashboard'); // Redirect to admin dashboard
+        navigate('/admin/movies'); // Redirect to admin dashboard
       } else {
         navigate('/'); // Redirect to home for clients
       }

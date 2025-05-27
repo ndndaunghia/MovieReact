@@ -22,6 +22,14 @@ const API_ENDPOINTS = {
     UPDATE: (id) => `/videos/${id}`,
     DELETE: (id) => `/videos/${id}`,
   },
+
+  USERS: {
+    GET_ALL: '/users',
+    GET_BY_ID: (id) => `/users/${id}`,
+    CREATE: '/users',
+    UPDATE: (id) => `/users/${id}`,
+    DELETE: (id) => `/users/${id}`,
+  },
 };
 
 export default API_ENDPOINTS; 

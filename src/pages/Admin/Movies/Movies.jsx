@@ -1,41 +1,45 @@
-import { useState, useEffect } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import "./Movies.css"
-import MovieModal from "./MovieModal"
-import { useCloudinary } from "../../../hooks/useCloudinary"
-import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_PRESENT_NAME } from "../../../utils/cloudinary-config"
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import "./Movies.css";
+import MovieModal from "./MovieModal";
+import { useCloudinary } from "../../../hooks/useCloudinary";
+import {
+  CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_PRESENT_NAME,
+} from "../../../utils/cloudinary-config";
 import {
   fetchVideos,
   createVideo,
   updateVideo,
   deleteVideo,
   clearError,
-} from "../../../redux/slices/videosSlice"
-import { fetchCategories } from "../../../redux/slices/categoriesSlice"
-import Loading from "../../../Components/common/Loading/Loading"
-import FileUploadLoading from "../../../Components/common/FileUploadLoading/FileUploadLoading"
-import toast, { Toaster } from "react-hot-toast"
+} from "../../../redux/slices/videosSlice";
+import { fetchCategories } from "../../../redux/slices/categoriesSlice";
+import Loading from "../../../Components/common/Loading/Loading";
+import FileUploadLoading from "../../../Components/common/FileUploadLoading/FileUploadLoading";
+import toast, { Toaster } from "react-hot-toast";
 
 const Movies = () => {
-  const dispatch = useDispatch()
-  const { videos, loading, error, totalVideos, currentPage, perPage } = useSelector((state) => state.videos)
-  const { categories } = useSelector((state) => state.categories)
+  const dispatch = useDispatch();
+  const { videos, loading, error, totalVideos, currentPage, perPage } =
+    useSelector((state) => state.videos);
+  const { categories } = useSelector((state) => state.categories);
 
   // State cho loading
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [processingText, setProcessingText] = useState("Đang xử lý...")
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingText, setProcessingText] = useState("Đang xử lý...");
 
   // State cho tìm kiếm và phân trang
-  const [searchTerm, setSearchTerm] = useState("")
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
-  const [page, setPage] = useState(1)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
 
   // State cho modal
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [showViewModal, setShowViewModal] = useState(false)
-  const [currentMovie, setCurrentMovie] = useState(null)
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [currentMovie, setCurrentMovie] = useState(null);
 
   // State cho form
   const [formData, setFormData] = useState({
@@ -45,111 +49,113 @@ const Movies = () => {
     video_url: "",
     banner_url: "",
     description: "",
-  })
+  });
 
   // State cho preview
-  const [imagePreview, setImagePreview] = useState(null)
-  const [bannerPreview, setBannerPreview] = useState(null)
+  const [imagePreview, setImagePreview] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState(null);
 
   // State cho validation
-  const [errors, setErrors] = useState({})
+  const [errors, setErrors] = useState({});
 
   const { uploadImage, uploadVideo, isUploading } = useCloudinary({
     cloudName: CLOUDINARY_CLOUD_NAME,
     uploadPreset: CLOUDINARY_PRESENT_NAME,
-  })
+  });
 
   // State cho từng field đang upload
   const [uploadingFields, setUploadingFields] = useState({
     thumbnail_url: false,
     banner_url: false,
-    video_url: false
+    video_url: false,
   });
 
   // Fetch videos khi trang, perPage hoặc searchTerm thay đổi
   useEffect(() => {
-    dispatch(fetchVideos({ page, perPage, q: debouncedSearchTerm }))
-  }, [dispatch, page, perPage, debouncedSearchTerm])
+    dispatch(fetchVideos({ page, perPage, q: debouncedSearchTerm }));
+  }, [dispatch, page, perPage, debouncedSearchTerm]);
 
   useEffect(() => {
-    dispatch(fetchCategories())
-  }, [dispatch])
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   // Hiển thị thông báo lỗi từ Redux store
   useEffect(() => {
     if (error) {
-      toast.error(error.detail.description || "Có lỗi xảy ra, vui lòng thử lại!")
-      dispatch(clearError()) // Xóa lỗi sau khi hiển thị
+      toast.error(
+        error.detail.description || "Có lỗi xảy ra, vui lòng thử lại!"
+      );
+      dispatch(clearError()); // Xóa lỗi sau khi hiển thị
     }
-  }, [error, dispatch])
+  }, [error, dispatch]);
 
   // Debounce searchTerm để tránh gọi API quá nhiều lần
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm)
-      setPage(1) // Reset về trang 1 khi tìm kiếm
-    }, 500)
+      setDebouncedSearchTerm(searchTerm);
+      setPage(1); // Reset về trang 1 khi tìm kiếm
+    }, 500);
 
-    return () => clearTimeout(timer)
-  }, [searchTerm])
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Xử lý tìm kiếm
   const handleSearch = (e) => {
-    setSearchTerm(e.target.value)
-  }
+    setSearchTerm(e.target.value);
+  };
 
   // Xử lý phân trang
   const handlePageChange = (newPage) => {
-    setPage(newPage)
-  }
+    setPage(newPage);
+  };
 
   // Tạo mảng các trang để hiển thị
-  const totalPages = Math.ceil(totalVideos / perPage)
-  const pageNumbers = []
-  const maxPageButtons = 5
+  const totalPages = Math.ceil(totalVideos / perPage);
+  const pageNumbers = [];
+  const maxPageButtons = 5;
 
   if (totalPages <= maxPageButtons) {
     for (let i = 1; i <= totalPages; i++) {
-      pageNumbers.push(i)
+      pageNumbers.push(i);
     }
   } else {
-    let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2))
-    let endPage = Math.min(totalPages, startPage + maxPageButtons - 1)
+    let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+    let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
 
     if (endPage - startPage + 1 < maxPageButtons) {
-      startPage = Math.max(1, endPage - maxPageButtons + 1)
+      startPage = Math.max(1, endPage - maxPageButtons + 1);
     }
 
     if (startPage > 1) {
-      pageNumbers.push(1)
-      if (startPage > 2) pageNumbers.push('...')
+      pageNumbers.push(1);
+      if (startPage > 2) pageNumbers.push("...");
     }
 
     for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i)
+      pageNumbers.push(i);
     }
 
     if (endPage < totalPages) {
-      if (endPage < totalPages - 1) pageNumbers.push('...')
-      pageNumbers.push(totalPages)
+      if (endPage < totalPages - 1) pageNumbers.push("...");
+      pageNumbers.push(totalPages);
     }
   }
 
   // Xử lý thay đổi form text input
   const handleChange = (e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
-    })
+    });
 
     if (errors[name]) {
       setErrors({
         ...errors,
         [name]: null,
-      })
+      });
     }
-  }
+  };
 
   // Xử lý thay đổi form file input với loading cho từng field
   const handleFileChange = async (e) => {
@@ -159,9 +165,9 @@ const Movies = () => {
       try {
         setUploadingFields({
           ...uploadingFields,
-          [name]: true
+          [name]: true,
         });
-        
+
         let uploadResult;
         if (name === "video_url") {
           uploadResult = await uploadVideo(files[0]);
@@ -190,7 +196,7 @@ const Movies = () => {
       } finally {
         setUploadingFields({
           ...uploadingFields,
-          [name]: false
+          [name]: false,
         });
       }
     }
@@ -198,7 +204,7 @@ const Movies = () => {
 
   // Validate form
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
 
     if (!formData.name.trim()) {
       newErrors.name = "Vui lòng nhập tên phim";
@@ -218,67 +224,75 @@ const Movies = () => {
 
   // Xử lý thêm phim mới
   const handleAddMovie = async () => {
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
     try {
-      setIsProcessing(true)
-      setProcessingText("Đang thêm phim mới...")
-      
-      await dispatch(createVideo(formData)).unwrap()
-      await dispatch(fetchVideos({ page, perPage, searchTerm: debouncedSearchTerm }))
-      
-      setShowAddModal(false)
-      resetForm()
-      toast.success("Thêm phim mới thành công!")
+      setIsProcessing(true);
+      setProcessingText("Đang thêm phim mới...");
+
+      await dispatch(createVideo(formData)).unwrap();
+      await dispatch(
+        fetchVideos({ page, perPage, searchTerm: debouncedSearchTerm })
+      );
+
+      setShowAddModal(false);
+      resetForm();
+      toast.success("Thêm phim mới thành công!");
     } catch (error) {
-      console.error("Error adding movie:", error)
+      console.error("Error adding movie:", error);
       // toast.error("Lỗi khi thêm phim mới!")
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
   // Xử lý cập nhật phim
   const handleUpdateMovie = async () => {
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
     try {
-      setShowEditModal(false)
+      setShowEditModal(false);
 
-      setIsProcessing(true)
-      setProcessingText("Đang cập nhật phim...")
-      
-      await dispatch(updateVideo({ id: currentMovie._id, videoData: formData })).unwrap()
-      await dispatch(fetchVideos({ page, perPage, searchTerm: debouncedSearchTerm }))
-      
-      toast.success("Cập nhật phim thành công!")
+      setIsProcessing(true);
+      setProcessingText("Đang cập nhật phim...");
+
+      await dispatch(
+        updateVideo({ id: currentMovie._id, videoData: formData })
+      ).unwrap();
+      await dispatch(
+        fetchVideos({ page, perPage, searchTerm: debouncedSearchTerm })
+      );
+
+      toast.success("Cập nhật phim thành công!");
     } catch (error) {
-      resetForm()
-      console.error("Error updating movie:", error)
+      resetForm();
+      console.error("Error updating movie:", error);
       // toast.error("Lỗi khi cập nhật phim!")
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
   // Xử lý xóa phim
   const handleDeleteMovie = async () => {
     try {
-      setShowDeleteModal(false)
+      setShowDeleteModal(false);
 
-      setIsProcessing(true)
-      setProcessingText("Đang xóa phim...")
-      
-      await dispatch(deleteVideo(currentMovie._id)).unwrap()
-      await dispatch(fetchVideos({ page, perPage, searchTerm: debouncedSearchTerm }))
-      
-      toast.success("Xóa phim thành công!")
+      setIsProcessing(true);
+      setProcessingText("Đang xóa phim...");
+
+      await dispatch(deleteVideo(currentMovie._id)).unwrap();
+      await dispatch(
+        fetchVideos({ page, perPage, searchTerm: debouncedSearchTerm })
+      );
+
+      toast.success("Xóa phim thành công!");
     } catch (error) {
-      console.error("Error deleting movie:", error)
+      console.error("Error deleting movie:", error);
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
   // Reset form
   const resetForm = () => {
@@ -289,21 +303,21 @@ const Movies = () => {
       video_url: "",
       banner_url: "",
       description: "",
-    })
-    setImagePreview(null)
-    setBannerPreview(null)
-    setErrors({})
+    });
+    setImagePreview(null);
+    setBannerPreview(null);
+    setErrors({});
     setUploadingFields({
       thumbnail_url: false,
       banner_url: false,
-      video_url: false
+      video_url: false,
     });
-  }
+  };
 
   // Mở modal chỉnh sửa
   const openEditModal = (movie) => {
-    setErrors({})
-    setCurrentMovie(movie)
+    setErrors({});
+    setCurrentMovie(movie);
     setFormData({
       category_id: movie.category_id,
       name: movie.name,
@@ -311,51 +325,51 @@ const Movies = () => {
       video_url: movie.video_url,
       banner_url: movie.banner_url,
       description: movie.description,
-    })
-    setImagePreview(movie.thumbnail_url)
-    setBannerPreview(movie.banner_url)
-    setShowEditModal(true)
-  }
+    });
+    setImagePreview(movie.thumbnail_url);
+    setBannerPreview(movie.banner_url);
+    setShowEditModal(true);
+  };
 
   // Mở modal xem chi tiết
   const openViewModal = (movie) => {
-    setCurrentMovie(movie)
-    setShowViewModal(true)
-  }
+    setCurrentMovie(movie);
+    setShowViewModal(true);
+  };
 
   // Mở modal xóa
   const openDeleteModal = (movie) => {
-    setCurrentMovie(movie)
-    setShowDeleteModal(true)
-  }
+    setCurrentMovie(movie);
+    setShowDeleteModal(true);
+  };
 
   // Đóng modal thêm mới
-const closeAddModal = () => {
-  if (isProcessing || Object.values(uploadingFields).some(Boolean)) return;
-  setShowAddModal(false);
-  resetForm();
-};
+  const closeAddModal = () => {
+    if (isProcessing || Object.values(uploadingFields).some(Boolean)) return;
+    setShowAddModal(false);
+    resetForm();
+  };
 
-// Đóng modal chỉnh sửa
-const closeEditModal = () => {
-  if (isProcessing || Object.values(uploadingFields).some(Boolean)) return;
-  setShowEditModal(false);
-  resetForm();
-};
+  // Đóng modal chỉnh sửa
+  const closeEditModal = () => {
+    if (isProcessing || Object.values(uploadingFields).some(Boolean)) return;
+    setShowEditModal(false);
+    resetForm();
+  };
 
-// Đóng modal xóa
-const closeDeleteModal = () => {
-  if (isProcessing) return;
-  setShowDeleteModal(false);
-};
+  // Đóng modal xóa
+  const closeDeleteModal = () => {
+    if (isProcessing) return;
+    setShowDeleteModal(false);
+  };
 
-// Đóng modal xem chi tiết
-const closeViewModal = () => {
-  setShowViewModal(false);
-};
+  // Đóng modal xem chi tiết
+  const closeViewModal = () => {
+    setShowViewModal(false);
+  };
 
   if (loading && !videos?.length) {
-    return <Loading fullScreen text="Đang tải dữ liệu phim..." />
+    return <Loading fullScreen text="Đang tải dữ liệu phim..." />;
   }
 
   return (
@@ -365,16 +379,19 @@ const closeViewModal = () => {
 
       {/* Hiển thị loading overlay khi đang xử lý */}
       {isProcessing && <Loading fullScreen text={processingText} />}
-      
+
       <div className="movies-header">
         <div className="movies-title">
           <h1>Quản lý phim</h1>
           <p>Quản lý danh sách phim trong hệ thống</p>
         </div>
-        <button className="add-movie-btn" onClick={() => {
-          resetForm()
-          setShowAddModal(true)
-        }}>
+        <button
+          className="add-movie-btn"
+          onClick={() => {
+            resetForm();
+            setShowAddModal(true);
+          }}
+        >
           + <span>Thêm phim mới</span>
         </button>
       </div>
@@ -382,11 +399,12 @@ const closeViewModal = () => {
       <div className="filters-bar">
         <div className="search-box">
           <span className="search-icon">🔍</span>
-          <input 
-            type="text" 
-            placeholder="Tìm kiếm phim..." 
-            value={searchTerm} 
-            onChange={handleSearch} 
+          <input
+            autoFocus
+            type="text"
+            placeholder="Tìm kiếm phim..."
+            value={searchTerm}
+            onChange={handleSearch}
           />
         </div>
       </div>
@@ -408,19 +426,38 @@ const closeViewModal = () => {
                 <tr key={movie._id}>
                   <td>{movie._id}</td>
                   <td>
-                    <img src={movie.thumbnail_url || "/placeholder.svg"} alt={movie.name} className="movie-poster" />
+                    <img
+                      src={movie.thumbnail_url || "/placeholder.svg"}
+                      alt={movie.name}
+                      className="movie-poster"
+                    />
                   </td>
                   <td className="movie-title">{movie.name}</td>
-                  <td>{categories?.find(cat => cat._id === movie.category_id)?.name || "N/A"}</td>
+                  <td>
+                    {categories?.find((cat) => cat._id === movie.category_id)
+                      ?.name || "N/A"}
+                  </td>
                   <td>
                     <div className="actions-cell">
-                      <button className="action-btn view-btn" title="Xem chi tiết" onClick={() => openViewModal(movie)}>
+                      <button
+                        className="action-btn view-btn"
+                        title="Xem chi tiết"
+                        onClick={() => openViewModal(movie)}
+                      >
                         👁️
                       </button>
-                      <button className="action-btn edit-btn" title="Chỉnh sửa" onClick={() => openEditModal(movie)}>
+                      <button
+                        className="action-btn edit-btn"
+                        title="Chỉnh sửa"
+                        onClick={() => openEditModal(movie)}
+                      >
                         ✏️
                       </button>
-                      <button className="action-btn delete-btn" title="Xóa" onClick={() => openDeleteModal(movie)}>
+                      <button
+                        className="action-btn delete-btn"
+                        title="Xóa"
+                        onClick={() => openDeleteModal(movie)}
+                      >
                         🗑️
                       </button>
                     </div>
@@ -430,8 +467,8 @@ const closeViewModal = () => {
             ) : (
               <tr>
                 <td colSpan="5" className="no-data">
-                  {debouncedSearchTerm 
-                    ? "Không tìm thấy phim nào phù hợp" 
+                  {debouncedSearchTerm
+                    ? "Không tìm thấy phim nào phù hợp"
                     : "Chưa có phim nào trong hệ thống"}
                 </td>
               </tr>
@@ -443,36 +480,38 @@ const closeViewModal = () => {
       {/* Phân trang */}
       {totalVideos > 0 && (
         <div className="pagination">
-          <button 
+          <button
             className="pagination-btn"
-            disabled={page === 1} 
+            disabled={page === 1}
             onClick={() => handlePageChange(page - 1)}
           >
             « Trước
           </button>
-          
-          {pageNumbers.map((pageNum, index) => (
-            pageNum === '...' ? (
-              <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
+
+          {pageNumbers.map((pageNum, index) =>
+            pageNum === "..." ? (
+              <span key={`ellipsis-${index}`} className="pagination-ellipsis">
+                ...
+              </span>
             ) : (
               <button
                 key={pageNum}
-                className={`pagination-btn ${page === pageNum ? 'active' : ''}`}
+                className={`pagination-btn ${page === pageNum ? "active" : ""}`}
                 onClick={() => handlePageChange(pageNum)}
               >
                 {pageNum}
               </button>
             )
-          ))}
-          
-          <button 
+          )}
+
+          <button
             className="pagination-btn"
-            disabled={page === totalPages} 
+            disabled={page === totalPages}
             onClick={() => handlePageChange(page + 1)}
           >
             Sau »
           </button>
-          
+
           <div className="pagination-info">
             Trang {page}/{totalPages}, Tổng số: {totalVideos} phim
           </div>
@@ -486,17 +525,21 @@ const closeViewModal = () => {
         title="Thêm phim mới"
         footer={
           <>
-            <button 
-              className="btn btn-secondary" 
+            <button
+              className="btn btn-secondary"
               onClick={() => setShowAddModal(false)}
-              disabled={isProcessing || Object.values(uploadingFields).some(Boolean)}
+              disabled={
+                isProcessing || Object.values(uploadingFields).some(Boolean)
+              }
             >
               Hủy
             </button>
-            <button 
-              className="btn btn-primary" 
-              onClick={handleAddMovie} 
-              disabled={isProcessing || Object.values(uploadingFields).some(Boolean)}
+            <button
+              className="btn btn-primary"
+              onClick={handleAddMovie}
+              disabled={
+                isProcessing || Object.values(uploadingFields).some(Boolean)
+              }
             >
               Thêm mới
             </button>
@@ -505,7 +548,13 @@ const closeViewModal = () => {
       >
         <div className="form-group">
           <label className="form-label">Tên phim</label>
-          <input type="text" name="name" className="form-control" value={formData.name} onChange={handleChange} />
+          <input
+            type="text"
+            name="name"
+            className="form-control"
+            value={formData.name}
+            onChange={handleChange}
+          />
           {errors.name && <div className="error-message">{errors.name}</div>}
         </div>
 
@@ -517,12 +566,19 @@ const closeViewModal = () => {
             value={formData.description}
             onChange={handleChange}
           ></textarea>
-          {errors.description && <div className="error-message">{errors.description}</div>}
+          {errors.description && (
+            <div className="error-message">{errors.description}</div>
+          )}
         </div>
 
         <div className="form-group">
           <label className="form-label">Danh mục</label>
-          <select name="category_id" className="form-select" value={formData.category_id} onChange={handleChange}>
+          <select
+            name="category_id"
+            className="form-select"
+            value={formData.category_id}
+            onChange={handleChange}
+          >
             <option value="">Chọn danh mục</option>
             {categories?.map((category) => (
               <option key={category._id} value={category._id}>
@@ -530,7 +586,9 @@ const closeViewModal = () => {
               </option>
             ))}
           </select>
-          {errors.category_id && <div className="error-message">{errors.category_id}</div>}
+          {errors.category_id && (
+            <div className="error-message">{errors.category_id}</div>
+          )}
         </div>
 
         <div className="form-group">
@@ -553,7 +611,9 @@ const closeViewModal = () => {
               </div>
             )}
           </div>
-          {errors.thumbnail_url && <div className="error-message">{errors.thumbnail_url}</div>}
+          {errors.thumbnail_url && (
+            <div className="error-message">{errors.thumbnail_url}</div>
+          )}
         </div>
 
         <div className="form-group">
@@ -576,7 +636,9 @@ const closeViewModal = () => {
               </div>
             )}
           </div>
-          {errors.banner_url && <div className="error-message">{errors.banner_url}</div>}
+          {errors.banner_url && (
+            <div className="error-message">{errors.banner_url}</div>
+          )}
         </div>
 
         <div className="form-group">
@@ -593,9 +655,13 @@ const closeViewModal = () => {
             {uploadingFields.video_url && (
               <FileUploadLoading text="Đang tải video lên..." />
             )}
-            {formData.video_url && <div className="file-name">Video đã được tải lên</div>}
+            {formData.video_url && (
+              <div className="file-name">Video đã được tải lên</div>
+            )}
           </div>
-          {errors.video_url && <div className="error-message">{errors.video_url}</div>}
+          {errors.video_url && (
+            <div className="error-message">{errors.video_url}</div>
+          )}
         </div>
       </MovieModal>
 
@@ -606,14 +672,17 @@ const closeViewModal = () => {
         title="Chi tiết phim"
         footer={
           <>
-            <button className="btn btn-secondary" onClick={() => setShowViewModal(false)}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setShowViewModal(false)}
+            >
               Đóng
             </button>
             <button
               className="btn btn-primary"
               onClick={() => {
-                setShowViewModal(false)
-                openEditModal(currentMovie)
+                setShowViewModal(false);
+                openEditModal(currentMovie);
               }}
             >
               Chỉnh sửa
@@ -641,7 +710,9 @@ const closeViewModal = () => {
                 <h2>{currentMovie.name}</h2>
                 <p>
                   <strong>Danh mục:</strong>{" "}
-                  {categories?.find((cat) => cat._id === currentMovie.category_id)?.name || "N/A"}
+                  {categories?.find(
+                    (cat) => cat._id === currentMovie.category_id
+                  )?.name || "N/A"}
                 </p>
               </div>
             </div>
@@ -671,17 +742,21 @@ const closeViewModal = () => {
         title="Chỉnh sửa phim"
         footer={
           <>
-            <button 
-              className="btn btn-secondary" 
+            <button
+              className="btn btn-secondary"
               onClick={() => setShowEditModal(false)}
-              disabled={isProcessing || Object.values(uploadingFields).some(Boolean)}
+              disabled={
+                isProcessing || Object.values(uploadingFields).some(Boolean)
+              }
             >
               Hủy
             </button>
-            <button 
-              className="btn btn-primary" 
-              onClick={handleUpdateMovie} 
-              disabled={isProcessing || Object.values(uploadingFields).some(Boolean)}
+            <button
+              className="btn btn-primary"
+              onClick={handleUpdateMovie}
+              disabled={
+                isProcessing || Object.values(uploadingFields).some(Boolean)
+              }
             >
               Cập nhật
             </button>
@@ -690,7 +765,13 @@ const closeViewModal = () => {
       >
         <div className="form-group">
           <label className="form-label">Tên phim</label>
-          <input type="text" name="name" className="form-control" value={formData.name} onChange={handleChange} />
+          <input
+            type="text"
+            name="name"
+            className="form-control"
+            value={formData.name}
+            onChange={handleChange}
+          />
           {errors.name && <div className="error-message">{errors.name}</div>}
         </div>
 
@@ -702,12 +783,19 @@ const closeViewModal = () => {
             value={formData.description}
             onChange={handleChange}
           ></textarea>
-          {errors.description && <div className="error-message">{errors.description}</div>}
+          {errors.description && (
+            <div className="error-message">{errors.description}</div>
+          )}
         </div>
 
         <div className="form-group">
           <label className="form-label">Danh mục</label>
-          <select name="category_id" className="form-select" value={formData.category_id} onChange={handleChange}>
+          <select
+            name="category_id"
+            className="form-select"
+            value={formData.category_id}
+            onChange={handleChange}
+          >
             <option value="">Chọn danh mục</option>
             {categories?.map((category) => (
               <option key={category._id} value={category._id}>
@@ -715,7 +803,9 @@ const closeViewModal = () => {
               </option>
             ))}
           </select>
-          {errors.category_id && <div className="error-message">{errors.category_id}</div>}
+          {errors.category_id && (
+            <div className="error-message">{errors.category_id}</div>
+          )}
         </div>
 
         <div className="form-group">
@@ -738,7 +828,9 @@ const closeViewModal = () => {
               </div>
             )}
           </div>
-          {errors.thumbnail_url && <div className="error-message">{errors.thumbnail_url}</div>}
+          {errors.thumbnail_url && (
+            <div className="error-message">{errors.thumbnail_url}</div>
+          )}
         </div>
 
         <div className="form-group">
@@ -761,7 +853,9 @@ const closeViewModal = () => {
               </div>
             )}
           </div>
-          {errors.banner_url && <div className="error-message">{errors.banner_url}</div>}
+          {errors.banner_url && (
+            <div className="error-message">{errors.banner_url}</div>
+          )}
         </div>
 
         <div className="form-group">
@@ -778,9 +872,13 @@ const closeViewModal = () => {
             {uploadingFields.video_url && (
               <FileUploadLoading text="Đang tải video lên..." />
             )}
-            {formData.video_url && <div className="file-name">Video đã được tải lên</div>}
+            {formData.video_url && (
+              <div className="file-name">Video đã được tải lên</div>
+            )}
           </div>
-          {errors.video_url && <div className="error-message">{errors.video_url}</div>}
+          {errors.video_url && (
+            <div className="error-message">{errors.video_url}</div>
+          )}
         </div>
       </MovieModal>
 
@@ -791,15 +889,15 @@ const closeViewModal = () => {
         title="Xác nhận xóa"
         footer={
           <>
-            <button 
-              className="btn btn-secondary" 
+            <button
+              className="btn btn-secondary"
               onClick={() => setShowDeleteModal(false)}
               disabled={isProcessing}
             >
               Hủy
             </button>
-            <button 
-              className="btn btn-danger" 
+            <button
+              className="btn btn-danger"
               onClick={handleDeleteMovie}
               disabled={isProcessing}
             >
@@ -808,10 +906,13 @@ const closeViewModal = () => {
           </>
         }
       >
-        <p>Bạn có chắc chắn muốn xóa phim "{currentMovie?.name}"? Hành động này không thể hoàn tác.</p>
+        <p>
+          Bạn có chắc chắn muốn xóa phim "{currentMovie?.name}"? Hành động này
+          không thể hoàn tác.
+        </p>
       </MovieModal>
     </div>
-  )
-}
+  );
+};
 
-export default Movies
+export default Movies;

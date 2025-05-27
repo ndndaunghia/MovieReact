@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import {
-  fetchCategories,
-  createCategory,
-  updateCategory,
-  deleteCategory,
   clearError,
-} from "../../../redux/slices/categoriesSlice";
-import "./Categories.css";
+  createUser,
+  deleteUser,
+  fetchUsers,
+  updateUser,
+} from "../../../redux/slices/userSlice";
 import toast, { Toaster } from "react-hot-toast";
 import Loading from "../../../Components/common/Loading/Loading";
+import "./Users.css";
 
-const Categories = () => {
+const Users = () => {
   const dispatch = useDispatch();
-  const { categories, loading, error, totalCategories, currentPage, perPage } =
-    useSelector((state) => state.categories);
+  const { users, loading, error, totalUsers, currentPage, perPage } =
+    useSelector((state) => state.users);
 
   const [modalType, setModalType] = useState(null); // 'add', 'edit', 'view'
-  const [editingCategory, setEditingCategory] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
-    description: "",
+    email: "",
+    password: "",
   });
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,7 +45,7 @@ const Categories = () => {
     setPage(newPage);
   };
 
-  const totalPages = Math.ceil(totalCategories / perPage);
+  const totalPages = Math.ceil(totalUsers / perPage);
   const pageNumbers = [];
   const maxPageButtons = 5;
 
@@ -78,9 +78,9 @@ const Categories = () => {
 
   useEffect(() => {
     dispatch(
-      fetchCategories({
-        page,
-        perPage,
+      fetchUsers({
+        page: page,
+        perPage: perPage,
         q: debouncedSearchTerm,
       })
     );
@@ -93,26 +93,28 @@ const Categories = () => {
     }
   }, [error, dispatch]);
 
-  const handleOpenModal = (type, category = null) => {
+  const handleOpenModal = (type, user = null) => {
     setModalType(type);
-    if (category) {
-      setEditingCategory(category);
+    if (user) {
+      setEditingUser(user);
       setFormData({
-        name: category.name,
-        description: category.description,
+        name: user.name,
+        email: user.email, // Ensure the email field is included
+        status: user.status, // Include status if needed for editing
       });
     } else {
-      setEditingCategory(null);
+      setEditingUser(null);
       setFormData({
         name: "",
-        description: "",
+        email: "",
+        status: 1, // Default status value
       });
     }
   };
 
   const handleCloseModal = () => {
     setModalType(null);
-    setEditingCategory(null);
+    setEditingUser(null);
     setFormData({
       name: "",
       description: "",
@@ -131,18 +133,18 @@ const Categories = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingCategory) {
+      if (editingUser) {
         await dispatch(
-          updateCategory({ id: editingCategory._id, categoryData: formData })
+          updateUser({ id: editingUser._id, userData: formData })
         ).unwrap();
 
-        toast.success("Cập nhật danh mục thành công!");
+        toast.success("Cập nhật người dùng thành công!");
       } else {
-        await dispatch(createCategory(formData)).unwrap();
-        toast.success("Thêm danh mục thành công!");
+        await dispatch(createUser(formData)).unwrap();
+        toast.success("Thêm người dùng thành công!");
       }
       await dispatch(
-        fetchCategories({ page, perPage, searchTerm: debouncedSearchTerm })
+        fetchUsers({ page, perPage, searchTerm: debouncedSearchTerm })
       );
       handleCloseModal();
     } catch (error) {
@@ -152,12 +154,12 @@ const Categories = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa danh mục này?")) {
+    if (window.confirm("Bạn có chắc chắn muốn xóa người dùng này?")) {
       try {
-        await dispatch(deleteCategory(id)).unwrap();
-        toast.success("Xóa danh mục thành công!");
+        await dispatch(deleteUser(id)).unwrap();
+        toast.success("Xóa người dùng thành công!");
         await dispatch(
-          fetchCategories({ page, perPage, searchTerm: debouncedSearchTerm })
+          fetchUsers({ page, perPage, searchTerm: debouncedSearchTerm })
         );
       } catch (error) {
         console.error("Error:", error);
@@ -172,7 +174,7 @@ const Categories = () => {
         return (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="name">Tên danh mục</label>
+              <label htmlFor="name">Tên người dùng</label>
               <input
                 type="text"
                 id="name"
@@ -183,11 +185,23 @@ const Categories = () => {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="description">Mô tả</label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
+              <label htmlFor="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="password">Mật khẩu</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
                 onChange={handleInputChange}
                 required
               />
@@ -216,7 +230,7 @@ const Categories = () => {
         return (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="name">Tên danh mục</label>
+              <label htmlFor="name">Tên người dùng</label>
               <input
                 type="text"
                 id="name"
@@ -227,14 +241,29 @@ const Categories = () => {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="description">Mô tả</label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
+              <label htmlFor="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
                 onChange={handleInputChange}
                 required
               />
+            </div>
+            <div className="form-group">
+              <label htmlFor="status">Trạng thái</label>
+              <select
+                style={{ padding: "0.5rem" }}
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleInputChange}
+                required
+              >
+                <option value={1}>Đang hoạt động</option>
+                <option value={0}>Ngưng hoạt động</option>
+              </select>
             </div>
             {error && <div className="error-message">{error.detail?.name}</div>}
             <div className="modal__actions">
@@ -258,14 +287,22 @@ const Categories = () => {
 
       case "view":
         return (
-          <div className="category-detail">
+          <div className="user-detail">
             <div className="form-group">
-              <label>Tên danh mục</label>
-              <p>{editingCategory?.name}</p>
+              <label>Tên người dùng</label>
+              <p>{editingUser?.name}</p>
             </div>
             <div className="form-group">
-              <label>Mô tả</label>
-              <p>{editingCategory?.description}</p>
+              <label>Email</label>
+              <p>{editingUser?.email}</p>
+            </div>
+            <div className="form-group">
+              <label>Trạng thái</label>
+              <p>
+                {editingUser?.status === 1
+                  ? "Đang hoạt động"
+                  : "Ngưng hoạt động"}
+              </p>
             </div>
             <div className="modal__actions">
               <button
@@ -278,7 +315,7 @@ const Categories = () => {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={() => handleOpenModal("edit", editingCategory)}
+                onClick={() => handleOpenModal("edit", editingUser)}
               >
                 Chỉnh sửa
               </button>
@@ -291,23 +328,22 @@ const Categories = () => {
     }
   };
 
-  if (loading && !categories?.data?.categories?.length) {
-    return <Loading fullScreen text="Đang tải dữ liệu danh mục phim..." />;
+  if (loading && !users?.data?.users?.length) {
+    return <Loading fullScreen text="Đang tải dữ liệu người dùng..." />;
   }
-
   return (
-    <div className="categories">
+    <div className="users">
       <Toaster position="top-right" reverseOrder={false} />
-      <div className="categories__header">
-        <div className="categories-title">
-          <h1>Thể loại phim</h1>
-          <p>Quản lý danh sách danh mục phim trong hệ thống</p>
+      <div className="users__header">
+        <div className="users-title">
+          <h1>Danh sách người dùng</h1>
+          <p>Quản lý danh sách người dùng trong hệ thống</p>
         </div>
         <button
           className="btn btn-primary"
           onClick={() => handleOpenModal("add")}
         >
-          + <span>Thêm danh mục</span>
+          + <span>Thêm người dùng</span>
         </button>
       </div>
 
@@ -317,82 +353,54 @@ const Categories = () => {
           <input
             autoFocus
             type="text"
-            placeholder="Tìm kiếm thể loại..."
+            placeholder="Tìm kiếm người dùng..."
             value={searchTerm}
             onChange={handleSearch}
           />
         </div>
       </div>
 
-      <div className="categories__table">
+      <div className="users__table">
         <table>
           <thead>
             <tr>
               <th>ID</th>
-              <th>Tên danh mục</th>
-              <th>Mô tả</th>
+              <th>Tên người dùng</th>
+              <th>Vai trò</th>
+              <th>Trạng thái</th>
               <th>Thao tác</th>
             </tr>
           </thead>
           <tbody>
-            {/* {categories?.map((category) => (
-              <tr key={category._id}>
-                <td>{category._id}</td>
-                <td>{category.name}</td>
-                <td>{category.description}</td>
-                <td>
-                  <div className="actions-cell">
-                    <button
-                      className="action-btn view-btn"
-                      title="Xem chi tiết"
-                      onClick={() => handleOpenModal('view', category)}
-                    >
-                      👁️
-                    </button>
-                    <button
-                      className="action-btn edit-btn"
-                      title="Chỉnh sửa"
-                      onClick={() => handleOpenModal('edit', category)}
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      className="action-btn delete-btn"
-                      title="Xóa"
-                      onClick={() => handleDelete(category._id)}
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))} */}
-            {categories?.length > 0 ? (
-              categories.map((category) => (
-                <tr key={category._id}>
-                  <td>{category._id}</td>
-                  <td>{category.name}</td>
-                  <td>{category.description}</td>
+            {users?.length > 0 ? (
+              users.map((user) => (
+                <tr key={user._id}>
+                  <td>{user._id}</td>
+                  <td>{user.name}</td>
+                  <td>{user.type === 0 ? "Người dùng" : "Quản trị viên"}</td>
+                  <td>
+                    {user.status === 1 ? "Đang hoạt động" : "Ngưng hoạt động"}
+                  </td>
                   <td>
                     <div className="actions-cell">
                       <button
                         className="action-btn view-btn"
                         title="Xem chi tiết"
-                        onClick={() => handleOpenModal("view", category)}
+                        onClick={() => handleOpenModal("view", user)}
                       >
                         👁️
                       </button>
                       <button
                         className="action-btn edit-btn"
                         title="Chỉnh sửa"
-                        onClick={() => handleOpenModal("edit", category)}
+                        onClick={() => handleOpenModal("edit", user)}
                       >
                         ✏️
                       </button>
                       <button
                         className="action-btn delete-btn"
                         title="Xóa"
-                        onClick={() => handleDelete(category._id)}
+                        onClick={() => handleDelete(user._id)}
                       >
                         🗑️
                       </button>
@@ -404,8 +412,8 @@ const Categories = () => {
               <tr>
                 <td colSpan="5" className="no-data">
                   {debouncedSearchTerm
-                    ? "Không tìm thấy thể loại nào phù hợp"
-                    : "Chưa có thể loại nào trong hệ thống"}
+                    ? "Không tìm thấy người dùng nào phù hợp"
+                    : "Chưa có người dùng nào trong hệ thống"}
                 </td>
               </tr>
             )}
@@ -413,7 +421,7 @@ const Categories = () => {
         </table>
       </div>
 
-      {totalCategories > 0 && (
+      {totalUsers > 0 && (
         <div className="pagination">
           <button
             className="pagination-btn"
@@ -448,7 +456,7 @@ const Categories = () => {
           </button>
 
           <div className="pagination-info">
-            Trang {page}/{totalPages}, Tổng số: {totalCategories} thể loại
+            Trang {page}/{totalPages}, Tổng số: {totalUsers} người dùng
           </div>
         </div>
       )}
@@ -458,10 +466,10 @@ const Categories = () => {
           <div className="modal__content" onClick={(e) => e.stopPropagation()}>
             <h2>
               {modalType === "add"
-                ? "Thêm danh mục mới"
+                ? "Thêm người dùng mới"
                 : modalType === "edit"
-                ? "Sửa danh mục"
-                : "Chi tiết danh mục"}
+                ? "Sửa người dùng"
+                : "Chi tiết người dùng"}
             </h2>
             {renderModalContent()}
           </div>
@@ -471,4 +479,4 @@ const Categories = () => {
   );
 };
 
-export default Categories;
+export default Users;
