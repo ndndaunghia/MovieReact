@@ -1,9 +1,76 @@
-/* .card-item {
-  text-align: center;
+.movie-slider-container {
+    position: relative;
+    margin: 0 20px; /* Để có chỗ cho arrows */
 }
 
-.card-item img {
-  width: 120px !important;
-  height: auto;
-  object-fit: cover;
-} */
+.slider-item {
+    padding: 0 10px; /* Khoảng cách giữa các items */
+}
+
+/* Tùy chỉnh arrows */
+.movie-slider-container .slick-prev,
+.movie-slider-container .slick-next {
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.movie-slider-container .slick-prev:hover,
+.movie-slider-container .slick-next:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: scale(1.1);
+}
+
+.movie-slider-container .slick-prev {
+    left: -30px;
+}
+
+.movie-slider-container .slick-next {
+    right: -30px;
+}
+
+.movie-slider-container .slick-prev:before,
+.movie-slider-container .slick-next:before {
+    font-size: 18px;
+    color: white;
+}
+
+/* Dots cho mobile */
+.movie-slider-container .slick-dots {
+    bottom: -50px;
+}
+
+.movie-slider-container .slick-dots li button:before {
+    color: white;
+    opacity: 0.5;
+    font-size: 12px;
+}
+
+.movie-slider-container .slick-dots li.slick-active button:before {
+    opacity: 1;
+    color: #e50914; /* Netflix red */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .movie-slider-container {
+        margin: 0 10px;
+    }
+    
+    .slider-item {
+        padding: 0 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .movie-slider-container {
+        margin: 0;
+    }
+    
+    .movie-slider-container .slick-dots {
+        bottom: -30px;
+    }
+}

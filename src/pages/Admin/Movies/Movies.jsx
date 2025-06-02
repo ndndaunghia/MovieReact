@@ -23,7 +23,9 @@ const Movies = () => {
   const dispatch = useDispatch();
   const { videos, loading, error, totalVideos, currentPage, perPage } =
     useSelector((state) => state.videos);
-  const { categories } = useSelector((state) => state.categories);
+  const { categories, loading: categoriesLoading } = useSelector(
+    (state) => state.categories
+  );
 
   // State cho loading
   const [isProcessing, setIsProcessing] = useState(false);
@@ -76,7 +78,9 @@ const Movies = () => {
   }, [dispatch, page, perPage, debouncedSearchTerm]);
 
   useEffect(() => {
-    dispatch(fetchCategories());
+    dispatch(fetchCategories(
+      { page: 1, perPage: 10, q: "" }
+    ));
   }, [dispatch]);
 
   // Hiển thị thông báo lỗi từ Redux store
@@ -368,8 +372,20 @@ const Movies = () => {
     setShowViewModal(false);
   };
 
-  if (loading && !videos?.length) {
-    return <Loading fullScreen text="Đang tải dữ liệu phim..." />;
+  const getLoadingText = () => {
+    if (loading && categoriesLoading) {
+      return "Đang tải dữ liệu phim và danh mục...";
+    } else if (loading) {
+      return "Đang tải dữ liệu phim...";
+    } else if (categoriesLoading) {
+      return "Đang tải danh mục...";
+    }
+    return "Đang tải dữ liệu...";
+  };
+  
+  // Sửa điều kiện loading
+  if ((loading && !videos?.length) || categoriesLoading) {
+    return <Loading fullScreen text={getLoadingText()} />;
   }
 
   return (

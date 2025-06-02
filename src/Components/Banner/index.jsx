@@ -1,13 +1,15 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
-import { getTopRated, getTopRatedAsync } from "../../movies";
+import { getvideo, getvideoAsync } from "../../movies";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
 import axios from "axios";
 import { API_TOP_RATED } from "../../API";
 import { useNavigate } from "react-router-dom";
+import { fetchVideos } from "../../redux/slices/videosSlice";
+import Loading from "../common/Loading/Loading";
 
 const MAX_DESCRIPTION_LENGTH = 200;
 const IMAGE_URL = "https://image.tmdb.org/t/p/original";
@@ -75,12 +77,16 @@ const BannerButton = styled.button`
 `;
 
 export default function Banner() {
-  const topRateds = useSelector((state) => state.topRated.topRated);
+  const { videos, loading, totalVideos, currentPage, perPage } =
+  useSelector((state) => state.videos);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [page, setPage] = useState(1);
+
   useEffect(() => {
-    dispatch(getTopRatedAsync());
-  }, []);
+     dispatch(fetchVideos({ page, perPage, q: '' }));
+   }, [dispatch, page, perPage]);
+
   var settings = {
     dots: false,
     infinite: true,
@@ -89,29 +95,35 @@ export default function Banner() {
     slidesToScroll: 1,
     arrows: false,
   };
-  //   console.log(IMAGE_URL + topRateds[0]?.backdrop_path);
+  //   console.log(IMAGE_URL + videos[0]?.backdrop_path);
+  if (loading && !videos?.length) {
+    return <Loading fullScreen text="Đang tải dữ liệu phim..." />;
+  }
+
+  // random thứ tự của videos
+  const shuffledVideos = [...videos].sort(() => 0.5 - Math.random());
   return (
     <Slider {...settings}>
-      {topRateds.map((topRated) => {
+      {shuffledVideos?.map((video) => {
         return (
-          <div key={topRated.id}>
+          <div key={video._id}>
             <BannerWrapper
-              key={topRated.id}
+              key={video._id}
               style={{
-                backgroundImage: `url(${IMAGE_URL + topRated?.backdrop_path})`,
+                backgroundImage: `url(${video.banner_url})`,
               }}
             >
               <BannerContent>
-                <BannerTitle>{topRated.title}</BannerTitle>
+                <BannerTitle>{video.name}</BannerTitle>
                 <BannerDescription>
-                  {topRated.overview.length > MAX_DESCRIPTION_LENGTH
-                    ? `${topRated.overview.slice(0, MAX_DESCRIPTION_LENGTH)}...`
-                    : topRated.overview}
+                  {video.description.length > MAX_DESCRIPTION_LENGTH
+                    ? `${video.description.slice(0, MAX_DESCRIPTION_LENGTH)}...`
+                    : video.description}
                 </BannerDescription>
                 <BannerButtons>
                   <BannerButton
                     onClick={() => {
-                      navigate(`/movie-detail/${topRated.id}`);
+                      navigate(`/movie-detail/${video._id}`);
                     }}
                   >
                     Xem chi tiết

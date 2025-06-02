@@ -15,8 +15,16 @@ a {
   box-shadow: 0 0 10px #2a264f;
 }
 
-.card .img1 {
+.card .img1, .card .img2 {
   position: absolute;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 200px; /* Đảm bảo có chiều cao tối thiểu */
+  transition: all 0.5s ease-in-out;
+}
+
+.card .img1 {
   top: 0;
   left: 0;
   height: 60%;
@@ -24,11 +32,9 @@ a {
   /* background-image: url(http://cima4u.tv/wp-content/uploads/1-71.jpg); */
   background-size: 190px 290px;
   background-position: left top;
-  transition: all 0.5s ease-in-out;
 }
 
 .card .img2 {
-  position: absolute;
   bottom: 0;
   left: 0;
   height: 40%;
@@ -36,7 +42,21 @@ a {
   /* background-image: url(http://cima4u.tv/wp-content/uploads/1-71.jpg); */
   background-size: 190px 290px;
   background-position: left bottom;
-  transition: all 0.5s ease-in-out;
+}
+
+.card .img1[style*="placeholder"], 
+.card .img2[style*="placeholder"] {
+  background-color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card .img1[style*="placeholder"]::after,
+.card .img2[style*="placeholder"]::after {
+  content: "🎬";
+  font-size: 3rem;
+  opacity: 0.5;
 }
 
 .card .title {

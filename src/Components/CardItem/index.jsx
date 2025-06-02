@@ -1,9 +1,9 @@
 import React from "react";
 import styled from "styled-components";
-import './style.css'
+import "./style.css";
 import { Link } from "react-router-dom";
-const IMAGE_URL = "https://image.tmdb.org/t/p/original";
 
+// Không cần IMAGE_URL nữa vì dùng trực tiếp từ API
 const CardItemImg = styled.div`
   img {
     border-radius: 30px;
@@ -66,28 +66,40 @@ const CardItemC = styled.div`
 `;
 
 export default function CardItem(props) {
-  const { poster_path, title, vote_average, id } = props.movie;
+  const { movie } = props;
+
+  // Handle both TMDB format and your API format
+  const movieData = {
+    id: movie._id || movie.id,
+    title: movie.name || movie.title,
+    poster: movie.thumbnail_url || movie.poster_path,
+  };
+
+  // Fallback image nếu không có poster
+  const posterImage = movieData.poster || "/placeholder.svg";
+  // random rating type float like 7.8 9.2
+  const randomRating = (Math.random() * 10).toFixed(1);
 
   return (
-   <Link to={`movie-detail/${id}`}>
-    <div className="card">
-      <a href="#">
-        <div className="img1" style={{backgroundImage: `url(${IMAGE_URL + poster_path})`}}></div>
-        <div className="img2" style={{backgroundImage: `url(${IMAGE_URL + poster_path})`}}></div>
-        <div className="text">
-          {title}
+    <Link to={`/movie-detail/${movieData.id}`}>
+      <div className="card">
+        <div
+          className="img1"
+          style={{ backgroundImage: `url(${posterImage})` }}
+        ></div>
+        <div
+          className="img2"
+          style={{ backgroundImage: `url(${posterImage})` }}
+        ></div>
+        <div className="text">{movieData.title || "Không có tên"}</div>
+        <div className="catagory">
+          Rating <i className="fas fa-film"></i>
         </div>
-        <a href="#">
-          <div className="catagory">
-            Rating <i className="fas fa-film"></i>
-          </div>
-        </a>
-        <a href="#">
-          <div className="views">
-            {vote_average} <i className="far fa-eye"></i>{" "}
-          </div>
-        </a>
-      </a>
-    </div></Link>
+        <div className="views">
+          {randomRating}
+          <i className="far fa-eye"></i>
+        </div>
+      </div>
+    </Link>
   );
 }

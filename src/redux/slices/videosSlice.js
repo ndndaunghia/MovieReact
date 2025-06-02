@@ -92,6 +92,7 @@ export const deleteVideo = createAsyncThunk(
     }
 );
 
+// Thêm flag trong initialState
 const initialState = {
     videos: [],
     currentVideo: null,
@@ -100,6 +101,7 @@ const initialState = {
     totalVideos: 0,
     currentPage: 1,
     perPage: 10,
+    hasInitialFetch: false, // Thêm flag này
 }
 
 const videosSlice = createSlice({
@@ -122,10 +124,21 @@ const videosSlice = createSlice({
         })
         .addCase(fetchVideos.fulfilled, (state, action) => {
           state.loading = false;
-          state.videos = action.payload.videos;
-          state.totalVideos = action.payload.total;
-          state.currentPage = action.payload.page;
-          state.perPage = action.payload.per_page;
+          const payload = action.payload;
+          console.log("Videos fetched:", payload);
+          
+          
+          if (payload) {
+            state.videos = payload.videos || payload.data;
+            state.totalVideos = payload.total || payload.total || state.videos.length;
+            state.currentPage = payload.page || payload.page || 1;
+            state.perPage = payload.per_page || payload.per_page || 10;
+          } else if (Array.isArray(payload)) {
+            state.videos = payload;
+            state.totalVideos = payload.length;
+          }
+          
+          state.hasInitialFetch = true; // Set flag khi đã fetch
         })
         .addCase(fetchVideos.rejected, (state, action) => {
           state.loading = false;

@@ -1,23 +1,34 @@
 import React, { useEffect, useState } from "react";
 import logo from "./logo.png";
 import user from "./user.png";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import './style.css';
 import { useDispatch, useSelector } from "react-redux";
-import { getSearchAsync } from "../../movies/search";
-import { getMe, logout } from "../../redux/slices/authSlice";
+import { logout, getMe } from "../../redux/slices/authSlice";
 import { getLocalStorage } from "../../utils/local-store";
 
 export default function Header() {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const [searchValue, setSearchValue] = useSearchParams();
-  const [query, setQuery] = useState(searchValue.get('q') || '');
+  const [searchParams] = useSearchParams();
+  
+  // Chỉ lấy query từ URL khi đang ở trang search
+  const isSearchPage = location.pathname === "/search";
+  const [query, setQuery] = useState(isSearchPage ? (searchParams.get('q') || '') : '');
 
   const isLoggedIn = !!user;
   const userName = user?.data?.name || 'User';
 
+  // Reset search input khi rời khỏi trang search
+  useEffect(() => {
+    if (!isSearchPage) {
+      setQuery('');
+    }
+  }, [location.pathname, isSearchPage]);
+
+  // Xử lý user authentication
   useEffect(() => {
     const token = getLocalStorage('token');
     if (token && !user) {
@@ -30,12 +41,12 @@ export default function Header() {
     navigate('/sign-in');
   };
 
-  const handleSearch = async (e) => {
+  // Xử lý form submit - Chỉ search khi click nút tìm kiếm
+  const handleSearch = (e) => {
     e.preventDefault();
-    if (query) {
-      dispatch(getSearchAsync(query));
+    if (query.trim()) {
       navigate(`/search?q=${query}`);
-      setQuery('');
+      setQuery(''); // Clear input sau khi search
     }
   };
 
@@ -94,32 +105,21 @@ export default function Header() {
               </Link>
             </li>
           </ul>
-          <form className="d-flex input-group w-auto gap-2" onSubmit={handleSearch}>
-            <input
-              type="search"
-              className="form-control"
-              placeholder="Phim, diễn viên..."
-              aria-label="Search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              style={{
-                backgroundColor: "transparent",
-                color: 'white',
-                outline: "none",
-                border: "none",
-                borderBottom: "1px solid white",
-                borderRadius: "0",
-                boxShadow: "none",
-                padding: "0",
-              }}
-            />
-            <span
-              className="material-symbols-outlined search-icon d-flex justify-content-center align-items-center mx-2"
-              style={{ color: "white", cursor: "pointer" }}
-              onClick={handleSearch}
-            >
-              search
-            </span>
+          {/* Form search - Đã loại bỏ debounce, chỉ submit khi click button */}
+          <form className="d-flex search-form" onSubmit={handleSearch}>
+            <div className="search-container">
+              <input
+                type="search"
+                className="search-input"
+                placeholder="Phim, diễn viên..."
+                aria-label="Search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              <button type="submit" className="search-button">
+                <span className="material-symbols-outlined">search</span>
+              </button>
+            </div>
           </form>
           <ul className="navbar-nav mb-2 mb-lg-0">
             <li className="nav-item d-flex align-items-center">
