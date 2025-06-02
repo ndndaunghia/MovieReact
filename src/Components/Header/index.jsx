@@ -85,24 +85,33 @@ export default function Header() {
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to='/tv-series' style={{ color: "#e5e5e5" }}>
+              {/* <Link className="nav-link" to='/tv-series' style={{ color: "#e5e5e5" }}>
                 Phim T.hình
-              </Link>
+              </Link> */}
+              <a href="" style={{ color: "#e5e5e5" }}>
+                Phim T.hình
+              </a>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to='/all-movies' style={{ color: "#e5e5e5" }}>
+              {/* <Link className="nav-link" to='/all-movies' style={{ color: "#e5e5e5" }}>
                 Phim
-              </Link>
+              </Link> */}
+              <a href="" className="nav-link" style={{ color: "#e5e5e5" }}>
+                Phim
+              </a>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="#" style={{ color: "#e5e5e5" }}>
+              <a className="nav-link" href="" style={{ color: "#e5e5e5" }}>
                 Mới & phổ biến
               </a>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to='/mylist' style={{ color: "#e5e5e5" }}>
+              {/* <Link className="nav-link" to='/mylist' style={{ color: "#e5e5e5" }}>
                 Danh sách của tôi
-              </Link>
+              </Link> */}
+               <a className="nav-link" href="" style={{ color: "#e5e5e5" }}>
+               Danh sách của tôi
+              </a>
             </li>
           </ul>
           {/* Form search - Đã loại bỏ debounce, chỉ submit khi click button */}
