@@ -20,6 +20,18 @@ export default function Profile() {
 
   const [activeTab, setActiveTab] = useState("profile");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false); // Thêm state để theo dõi thay đổi
+
+  // Kiểm tra xem profileData có khác với user.data không
+  useEffect(() => {
+    if (isEditingProfile) {
+      const hasNameChanged = profileData.name !== (user?.data?.name || "");
+      const hasEmailChanged = profileData.email !== (user?.data?.email || "");
+      setHasChanges(hasNameChanged || hasEmailChanged);
+    } else {
+      setHasChanges(false); // Nếu không ở chế độ chỉnh sửa, không có thay đổi
+    }
+  }, [profileData, user, isEditingProfile]);
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
@@ -195,7 +207,11 @@ export default function Profile() {
                   </button>
                 ) : (
                   <div>
-                    <button type="submit" className="btn btn-warning me-3" disabled={loading}>
+                    <button
+                      type="submit"
+                      className="btn btn-warning me-3"
+                      disabled={loading || !hasChanges} // Vô hiệu hóa nếu không có thay đổi hoặc đang loading
+                    >
                       {loading ? "Đang lưu..." : "Lưu thay đổi"}
                     </button>
                     <button type="button" className="btn btn-secondary" onClick={cancelProfileEdit} disabled={loading}>
