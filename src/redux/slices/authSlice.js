@@ -32,6 +32,58 @@ export const register = createAsyncThunk(
   }
 );
 
+// update profile
+
+// {
+// "status": 201,
+// "error": false,
+// "message": "Success"
+// }
+
+// {
+//   "status": 400,
+//   "error": true,
+//   "message": "Validation Error",
+//   "detail": {
+//       "email": "Email đã tồn tại."
+//   }
+// }
+export const updateProfile = createAsyncThunk(
+  'auth/updateProfile',
+  async (userData, { getState, rejectWithValue }) => {
+    try {
+      const { auth } = getState();
+      const response = await axiosInstance.put(API_ENDPOINTS.AUTH.UPDATE_PROFILE, userData, {
+        headers: {
+          Authorization: `Bearer ${auth.token}`
+        }
+      });
+      return response.data.data;
+    }
+    catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const changePassword = createAsyncThunk(
+  'auth/changePassword',
+  async (passwordData, { getState, rejectWithValue }) => {
+    try {
+      const { auth } = getState();
+      const response = await axiosInstance.patch(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, passwordData, {
+        headers: {
+          Authorization: `Bearer ${auth.token}`
+        }
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+
 export const getMe = createAsyncThunk(
   'auth/getMe',
   async (_, { rejectWithValue }) => {
@@ -70,6 +122,9 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       localStorage.removeItem('token');
     },
+    clearError: (state) => {
+      state.error = null;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -103,6 +158,35 @@ const authSlice = createSlice({
         state.error = action.payload;
         state.isAuthenticated = false;
       })
+
+      .addCase(updateProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        if (state.user && state.user.data) {
+          state.user.data.name = action.meta.arg.name;
+          state.user.data.email = action.meta.arg.email;
+        }
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(changePassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(changePassword.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       .addCase(getMe.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -123,5 +207,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, clearError} = authSlice.actions;
 export default authSlice.reducer;

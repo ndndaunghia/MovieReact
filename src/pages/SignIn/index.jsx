@@ -7,8 +7,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { login, getMe } from "../../redux/slices/authSlice";
 
 export default function SignIn() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
 
@@ -20,15 +20,15 @@ export default function SignIn() {
     e.preventDefault();
     try {
       await dispatch(login({ email, password })).unwrap();
-      
+
       const userData = await dispatch(getMe()).unwrap();
-      
+
       setShowSuccessAlert(true);
-      
+
       if (userData?.data?.type === 1) {
-        navigate('/admin/movies'); // Redirect to admin dashboard
+        navigate("/admin/movies"); // Redirect to admin dashboard
       } else {
-        navigate('/'); // Redirect to home for clients
+        navigate("/"); // Redirect to home for clients
       }
     } catch (error) {
       setShowErrorAlert(true);
@@ -39,9 +39,12 @@ export default function SignIn() {
     <div className="backImg">
       <div className="background">
         <div className="logo">
-          <a href="">
+          {/* <a href="">
             <img src={logo} alt="" />
-          </a>
+          </a> */}
+          <Link to="/">
+            <img src={logo} alt="Logo" />
+          </Link>
         </div>
         <div className="container login-wrapper">
           <form
@@ -135,7 +138,7 @@ export default function SignIn() {
                 </label>
               </div>
               <Link
-                to='/forgot-password'
+                to="/forgot-password"
                 className="text-decoration-none"
                 style={{ color: "#8c8c8c" }}
               >
@@ -145,7 +148,7 @@ export default function SignIn() {
             <div className="mb-4">
               <span>Bạn mới tham gia Netflix?</span>
               <Link
-                to='/sign-up'
+                to="/sign-up"
                 className="text-decoration-none ms-1"
                 style={{ color: "white" }}
               >
@@ -248,7 +251,15 @@ export default function SignIn() {
             <div className="row">
               <div className="col mb-5">
                 <i className="fa-solid fa-globe me-2"></i>
-                <select name="" id="" style={{ backgroundColor: 'transparent', color: '#ffff', opacity: '0.8' }}>
+                <select
+                  name=""
+                  id=""
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "#ffff",
+                    opacity: "0.8",
+                  }}
+                >
                   <option value="">Tiếng Việt</option>
                   <option value="">English</option>
                 </select>

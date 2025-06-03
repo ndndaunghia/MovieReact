@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import logo from "./logo.png";
-import user from "./user.png";
+import userImg from "./user.png";
 import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import './style.css';
 import { useDispatch, useSelector } from "react-redux";
@@ -151,7 +151,7 @@ export default function Header() {
                 {isLoggedIn ? (
                   <span style={{ color: "white" }}>{userName}</span>
                 ) : (
-                  <img src={user} className="img-fluid rounded-1" height="40" width="40" alt="User" />
+                  <img src={userImg} className="img-fluid rounded-1" height="40" width="40" alt="User" />
                 )}
               </a>
               {isLoggedIn ? (

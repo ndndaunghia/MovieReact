@@ -5,6 +5,8 @@ const API_ENDPOINTS = {
     REGISTER: '/auth/register',
     LOGOUT: '/auth/logout',
     ME: '/auth/me',
+    UPDATE_PROFILE: 'auth/me',
+    CHANGE_PASSWORD: '/auth/change-password',  // POST method
   },
 
   CATEGORIES: {
