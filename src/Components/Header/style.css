@@ -96,3 +96,161 @@
 .custom-menu .dropdown-item:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
+
+/* Mega menu styling */
+.has-megamenu {
+  position: relative;
+}
+
+.mega-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 450px;
+  background-color: rgba(20, 20, 20, 0.95);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.3s ease-in-out;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.has-megamenu:hover .mega-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.mega-menu.tv-menu,
+.mega-menu.movie-menu {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menu-inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-column {
+  width: 100%;
+}
+
+.menu-column h3 {
+  color: #e50914;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.category-item {
+  color: #e5e5e5;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 6px 0;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.category-item:hover {
+  color: #fff;
+  transform: translateX(3px);
+}
+
+.view-all {
+  text-align: center;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.view-all a {
+  color: #e50914;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+
+.view-all a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive styling */
+@media (max-width: 992px) {
+  .mega-menu {
+    position: static;
+    width: 100%;
+    background-color: transparent;
+    box-shadow: none;
+    padding: 0 0 0 15px;
+    border: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition: none;
+    margin-top: 10px;
+    display: none;
+  }
+  
+  .has-megamenu:hover .mega-menu {
+    display: block;
+  }
+  
+  .menu-column h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    border-bottom: none;
+  }
+  
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .category-item {
+    font-size: 13px;
+  }
+  
+  .view-all {
+    margin-top: 10px;
+    border-top: none;
+  }
+}
+
+/* Navbar background on scroll */
+.navbar {
+  transition: background-color 0.3s ease;
+}
+
+.navbar.scrolled {
+  background-color: rgba(0, 0, 0, 0.95) !important;
+}
+
+/* Add this script to make navbar change background on scroll */

@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import MovieSlider from "../MovieSlider";
 import { useDispatch, useSelector } from "react-redux";
-import { getUpComingAsync } from "../../movies/upcoming";
-import Loading from "../common/Loading/Loading";
 
 export default function UpComing() {
   const { videos, loading, error, hasInitialFetch } = useSelector(

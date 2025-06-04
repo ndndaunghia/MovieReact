@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
-import { getvideo, getvideoAsync } from "../../movies";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
-import axios from "axios";
-import { API_TOP_RATED } from "../../API";
 import { useNavigate } from "react-router-dom";
 import { fetchVideos } from "../../redux/slices/videosSlice";
 import Loading from "../common/Loading/Loading";

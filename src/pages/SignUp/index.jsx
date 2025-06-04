@@ -1,10 +1,7 @@
 import React, { useState } from "react";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { collection, addDoc, getFirestore } from "firebase/firestore";
 import logo from "./logo.png";
 import "./style.css";
 import { useNavigate } from "react-router-dom";
-import app from "../../Firebase";
 import { Alert, Snackbar } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { getMe, register } from "../../redux/slices/authSlice";

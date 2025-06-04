@@ -8,13 +8,14 @@ import MovieDetail from "./Components/MovieDetail";
 import SignUp from "./pages/SignUp";
 import Search from "./pages/Search";
 import Profile from "./pages/Profile";
-import ForgotPassword from "./pages/Forgot-Password";
 import AdminLayout from './Components/Admin/AdminLayout';
 import Movies from './pages/Admin/Movies/Movies';
 import ProtectedRoute from './Components/ProtectedRoute/ProtectedRoute';
 import PublicRoute from './Components/PublicRoute/PublicRoute';
 import Categories from './pages/Admin/Categories/Categories';
 import Users from './pages/Admin/Users/Users';
+import CategoryMovies from './pages/CategoryMovies/CategoryMovies';
+
 // Admin Routes
 const adminRoutes = {
   path: '/admin',
@@ -74,14 +75,6 @@ const publicRoutes = [
     ),
   },
   {
-    path: 'forgot-password',
-    element: (
-      <PublicRoute>
-        <ForgotPassword />
-      </PublicRoute>
-    ),
-  },
-  {
     path: '/profile',
     element: (
       <ProtectedRoute>
@@ -101,21 +94,27 @@ const publicRoutes = [
       </>
     ),
   },
+  // Thêm route cho category movies
   {
-    path: "/search/movie-detail/:id",
+    path: "/category/:categoryId",
     element: (
       <>
         <Header />
-        <Outlet />
+        <CategoryMovies />
         <Footer />
       </>
     ),
-    children: [
-      {
-        path: "/search/movie-detail/:id",
-        element: <MovieDetail />,
-      },
-    ],
+  },
+  // Thêm route cho all movies (không có categoryId)
+  {
+    path: "/all-movies",
+    element: (
+      <>
+        <Header />
+        <CategoryMovies />
+        <Footer />
+      </>
+    ),
   },
   {
     path: "/movie-detail/:id",

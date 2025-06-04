@@ -1,18 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./style.css";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
-import { type } from "@testing-library/user-event/dist/type";
 import { useDispatch, useSelector } from "react-redux";
-import { getMovieDetailAsync } from "../../movies/moviedetail";
-import {
-  addToFavoriteAsync,
-  getFavoriteAsync,
-  removeFavoriteAsync,
-} from "../../movies/favorite";
-import { firebaseAppPromise } from "../../Firebase";
-import { getDatabase, onValue, ref } from "firebase/database";
-import { API_KEY, BASE_URL } from "../../API";
 import { Alert, Snackbar } from "@mui/material";
 import { fetchVideoById } from "../../redux/slices/videosSlice";
 import { fetchCategoryById } from "../../redux/slices/categoriesSlice";
@@ -20,7 +9,6 @@ import Loading from "../common/Loading/Loading";
 
 export default function MovieDetail() {
   const { id } = useParams();
-  const movieDetail = useSelector((state) => state.movieDetail.movieDetail);
   const { user } = useSelector((state) => state.auth);
   const { currentVideo, loading } = useSelector((state) => state.videos);
   const { currentCategory } = useSelector((state) => state.categories);
@@ -28,9 +16,7 @@ export default function MovieDetail() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [isInFavorite, setIsInFavorite] = useState(false);
   const [iFrame, setIFrame] = useState(false);
-  const [trailer, setTrailer] = useState("https://www.youtube.com/embed/");
   const [showSuccessAddAlert, setShowSuccessAddAlert] = useState(false);
   const [showSuccessRemoveAlert, setShowSuccessRemoveAlert] = useState(false);
 

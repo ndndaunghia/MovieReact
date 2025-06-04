@@ -1,0 +1,151 @@
+.netflix-pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 30px 0;
+  font-family: 'Netflix Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.pagination-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(51, 51, 51, 0.8);
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.pagination-arrow:hover:not(.disabled) {
+  background-color: #e50914;
+  transform: scale(1.05);
+}
+
+.pagination-arrow.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: rgba(51, 51, 51, 0.4);
+}
+
+.pagination-numbers {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(51, 51, 51, 0.8);
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.pagination-number:hover:not(.active) {
+  background-color: rgba(229, 9, 20, 0.7);
+}
+
+.pagination-number.active {
+  background-color: #e50914;
+  font-weight: bold;
+}
+
+.pagination-dots {
+  color: white;
+  margin: 0 5px;
+  letter-spacing: 2px;
+}
+
+.pagination-info {
+  margin-top: 15px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+/* Animation */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pagination-number.active {
+  animation: pulse 2s infinite;
+}
+
+/* Responsive styling */
+@media (max-width: 576px) {
+  .pagination-arrow, 
+  .pagination-number {
+    width: 36px;
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .pagination-numbers {
+    gap: 5px;
+  }
+  
+  .pagination-container {
+    gap: 5px;
+  }
+
+  /* Ẩn các số trang trên mobile, chỉ hiển thị trang hiện tại, 
+     trang đầu, trang cuối và nút điều hướng */
+  .pagination-number:not(.active):not(:first-child):not(:last-child) {
+    display: none;
+  }
+  
+  .pagination-dots {
+    display: none;
+  }
+}
+
+/* Dark mode enhancement */
+@media (prefers-color-scheme: dark) {
+  .pagination-arrow, 
+  .pagination-number {
+    background-color: rgba(40, 40, 40, 0.8);
+  }
+  
+  .pagination-arrow:hover:not(.disabled),
+  .pagination-number:hover:not(.active) {
+    background-color: rgba(229, 9, 20, 0.7);
+  }
+}
+
+/* Hover và focus effects */
+.pagination-arrow:focus,
+.pagination-number:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.5);
+}
+
+/* Glow effect cho trang active */
+.pagination-number.active {
+  box-shadow: 0 0 15px rgba(229, 9, 20, 0.7);
+}

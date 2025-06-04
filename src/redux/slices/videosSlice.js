@@ -4,18 +4,25 @@ import axiosInstance from "../../api/axiosInstance";
 
 export const fetchVideos = createAsyncThunk(
   "videos/fetchVideos",
-  async ({ page = 1, perPage = 10, q = "" }, {getState, rejectWithValue }) => {
+  async ({ page = 1, perPage = 10, q = "", category_id = null }, {getState, rejectWithValue }) => {
     try {
       const { auth } = getState();
+      const params = {
+        page,
+        per_page: perPage,
+        q
+      };
+      
+      // Thêm category_id vào params nếu có
+      if (category_id) {
+        params.category_id = category_id;
+      }
+      
       const response = await axiosInstance.get(API_ENDPOINTS.VIDEOS.GET_ALL, {
-        params: {
-          page,
-          per_page: perPage,
-          q: q,
-        },
+        params,
         headers: {
           Authorization: `Bearer ${auth.token}`,
-      },
+        },
       });
       return response.data.data;
     } catch (error) {
@@ -125,8 +132,6 @@ const videosSlice = createSlice({
         .addCase(fetchVideos.fulfilled, (state, action) => {
           state.loading = false;
           const payload = action.payload;
-          console.log("Videos fetched:", payload);
-          
           
           if (payload) {
             state.videos = payload.videos || payload.data;
